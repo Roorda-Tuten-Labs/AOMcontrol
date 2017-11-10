@@ -186,12 +186,12 @@ CurFrame(:,:,1) = 50;
 SYSPARAMS.realsystem = 0;
 if (init_load == 0)
     SYSPARAMS.loop = 1;
-    VideoParams.rootfolder = 'D:\Video_Folder\';
+    VideoParams.rootfolder = fullfile('D:', 'Video_Folder');
     VideoParams.videofolder = 'no video folder';
     VideoParams.vidprefix = 'Sample';
     VideoParams.videodur = 1;
     VideoParams.vidrecord = 0;
-    StimParams.stimpath = [pwd '\BMP_files\'];
+    StimParams.stimpath = fullfile(pwd, 'BMP_files');
     StimParams.fext = 'bmp';
     StimParams.avireplaytimes = 2;
     StimParams.avireplayinfinite = 0;
@@ -207,7 +207,7 @@ if (init_load == 0)
 end
 %check for the validity of root folder
 if (exist(VideoParams.rootfolder, 'dir') ~= 7)
-    VideoParams.rootfolder = 'D:\Video_Folder\';    
+    VideoParams.rootfolder = fullfile('D:', 'Video_Folder');    
     if (exist(VideoParams.rootfolder, 'dir') ~= 7)
         mkdir(VideoParams.rootfolder);
     end
@@ -290,7 +290,7 @@ axes(h); %#ok<MAXES>
 h = imshow(frame,'InitialMagnification',100, 'Border', 'tight');
 set(handles.raster1, 'NextPlot','replacechildren');
 set(h,'ButtonDownFcn',@raster1_ButtonDownFcn);
-addpath('.\Experiments');
+addpath('Experiments');
 ParseExperiments;
 set(handles.power_slider, 'Enable','On');
 set(handles.aom0_power_radio, 'Enable','On');
@@ -478,7 +478,7 @@ if dirname == 0;
 else
     %do nothing
 end
-StimParams.stimpath = [dirname '\'];
+StimParams.stimpath = fullfile(dirname);
 
 Parse_Load_Buffers(1);
 [seqfname, seqpname,filterindex] = uigetfile('*.SEQ;*.seq', 'Select the sequence file');
@@ -506,7 +506,7 @@ if  isempty(Mov.seq) || ~ischar(Mov.seq)
 end
 
 fprefix = StimParams.fprefix;
-Mov.dir = [dirname '\'];
+Mov.dir = fullfile(dirname);
 Mov.pfx = fprefix;
 Mov.frm = 1;
 Mov.msg = 'On - Image Sequence Mode';
@@ -573,7 +573,7 @@ set(handles.sys_ai, 'Checked', 'off');
 function loadBMP(hObject, eventdata, handles)
 global SYSPARAMS VideoParams CurFrame OrigFrame StimParams; %#ok<NUSED>
 
-if exist('handles','var') == 0;
+if exist('handles','var') == 0
     handles = guihandles;
 else
     %donothing
@@ -665,7 +665,7 @@ switch bmp
         contrast = CFG.contrast;
         setappdata(hAomControl, 'CFG',CFG);
         MakeGrating(contrast,cycles);
-        pname = [pwd,'\temp\'];
+        pname = fullfile(pwd,'temp');
     case 'calibration frame'
         uiwait(CalibrationTool);
         hAomControl = getappdata(0,'hAomControl');
@@ -675,7 +675,7 @@ switch bmp
         level = CFG.level;
         setappdata(hAomControl, 'CFG',CFG);
         MakeCalib(level);
-        pname = [pwd,'\temp\'];
+        pname = fullfile(pwd,'temp');
 end
 
 StimParams.stimpath = pname;
@@ -931,11 +931,11 @@ global SYSPARAMS;
 frame = ones(SYSPARAMS.rasterV,SYSPARAMS.rasterH);
 frame = frame.*level;
 
-if isdir([pwd,'\temp']) == 0;
-    mkdir(pwd,'temp');    
-    cd([pwd,'\temp']);
+if isdir(fullfile(pwd,'temp')) == 0
+    mkdir(pwd, 'temp');    
+    cd(fullfile(pwd,'temp'));
 else
-    cd([pwd,'\temp']);
+    cd(fullfile(pwd,'temp'));
 end
 
 imwrite(frame,'frame2.bmp');
@@ -1004,9 +1004,9 @@ blankbmp = ones(SYSPARAMS.rasterV, SYSPARAMS.rasterH);
 hibitblank = blankbmp.*hibit;
 bmpgrating = grating;
 
-if isdir([pwd,'\temp']) == 0;
+if isdir(fullfile(pwd,'temp')) == 0
     mkdir(pwd,'temp');    
-    cd([pwd,'\temp']);
+    cd(fullfile(pwd,'temp'));
     blankbmp = ones(height,width).*contrast;
     imwrite(blankbmp,'frame3.bmp');
     fid = fopen('frame3.buf','w');
@@ -1016,7 +1016,7 @@ if isdir([pwd,'\temp']) == 0;
     fwrite(fid,hibitblank,'int16');
     fclose(fid);
 else
-    cd([pwd,'\temp']);
+    cd(fullfile(pwd,'temp'));
 end
 imwrite(bmpgrating,'frame2.bmp');
 fid = fopen('frame2.buf','w');
@@ -1051,10 +1051,10 @@ h = fwind2(H, window);
 g = imfilter(rawimage, h, 'replicate', 'same');
 g = 1 - abs(g);
 
-if isdir([pwd,'\temp']) == 0;
+if isdir(fullfile(pwd,'temp')) == 0
     mkdir(pwd,'temp');    
     blankframe = ones(imagesizeV,imagesizeH)*8191;
-    cd([pwd,'\temp']);
+    cd(fullfile(pwd,'temp'));
     blankbmp = ones(imagesizeV,imagesizeH);
     imwrite(blankbmp,'frame0.bmp');
     fid = fopen('frame0.buf','w');
@@ -1062,7 +1062,7 @@ if isdir([pwd,'\temp']) == 0;
     fwrite(fid,blankframe,'int16');
     fclose(fid);
 else
-    cd([pwd,'\temp']);
+    cd(fullfile(pwd,'temp'));
 end
 bufname = [fname(1:end-4) '.buf'];
 imwrite(g,fname);
@@ -1097,10 +1097,10 @@ shiftedim = fftshift(fft2dim);
 multim = shiftedim.*filter;
 filteredimage = 1-abs(ifft2(multim));
 
-if isdir([pwd,'\temp']) == 0;
+if isdir(fullfile(pwd,'temp')) == 0
     mkdir(pwd,'temp');    
     blankframe = ones(imagesizeV,imagesizeH)*8191;
-    cd([pwd,'\temp']);
+    cd(fullfile(pwd,'temp'));
     blankbmp = ones(imagesizeV,imagesizeH);
     imwrite(blankbmp,'frame0.bmp');
     fid = fopen('frame0.buf','w');
@@ -1108,7 +1108,7 @@ if isdir([pwd,'\temp']) == 0;
     fwrite(fid,blankframe,'int16');
     fclose(fid);
 else
-    cd([pwd,'\temp']);
+    cd(fullfile(pwd,'temp'));
 end
 bufname = [fname(1:end-4) '.buf'];
 imwrite(filteredimage,fname);
@@ -1743,12 +1743,12 @@ newimage = reshape(image, prod(size(image)),1);
 hibitimage = polyval(dacoeff,newimage);
 hibitimage = reshape(hibitimage, SYSPARAMS.rasterV, SYSPARAMS.rasterH);
 
-if isdir([pwd,'\temp']) == 0;
+if isdir(fullfile(pwd,'temp')) == 0
     mkdir(pwd,'temp');    
-    blankframe = zeros(height,width);
-    cd([pwd,'\temp']);
+    %blankframe = zeros(height,width);
+    cd(fullfile(pwd,'temp'));
 else
-    cd([pwd,'\temp']);
+    cd(fullfile(pwd,'temp'));
 end
 
 fid = fopen('frame2.buf','w');
@@ -1837,11 +1837,11 @@ frame(find(Z <= (radius)^2))=0;
 frame(frame==0)  = 0; 
 frame(frame==1) = 255;
 end
-if isdir([pwd,'\temp']) == 0;
+if isdir(fullfile(pwd,'temp')) == 0
     mkdir(pwd,'temp');    
-    cd([pwd,'\temp']);
+    cd(fullfile(pwd,'temp'));
 else
-    cd([pwd,'\temp']);
+    cd(fullfile(pwd,'temp'));
 end
 
 imwrite(frame,'analog2.bmp');
@@ -2440,7 +2440,7 @@ OrigFrame.green = 0;
 OrigFrame.blue = 0;
 StimParams.filepath{4} = '-';
 currentpath = cd;
-StimParams.stimpath = [currentpath '\BMP_Files\TCA\'];
+StimParams.stimpath = fullfile(currentpath, 'BMP_Files', 'TCA');
 if SYSPARAMS.realsystem == 1
     %set gain to zero
     commandstring = ['Gain#0#']; %gain=0
@@ -2462,15 +2462,15 @@ if SYSPARAMS.realsystem == 1
 end
 StimParams.filepath{2} = '-';
 StimParams.filepath{3} = '-';
-StimParams.filepath{1} = [currentpath '\BMP_Files\TCA\TCA256x128IR.bmp'];
+StimParams.filepath{1} = fullfile(currentpath, 'BMP_Files', 'TCA', 'TCA256x128IR.bmp');
 Show_Image(1);
 StimParams.filepath{1} = '-';
 StimParams.filepath{3} = '-';
-StimParams.filepath{2} = [currentpath '\BMP_Files\TCA\TCA256x128R.bmp'];
+StimParams.filepath{2} = fullfile(currentpath, 'BMP_Files', 'TCA', 'TCA256x128R.bmp');
 Show_Image(1);
 StimParams.filepath{1} = '-';
 StimParams.filepath{2} = '-';
-StimParams.filepath{3} = [currentpath '\BMP_Files\TCA\TCA256x128G.bmp'];
+StimParams.filepath{3} = fullfile(currentpath, 'BMP_Files', 'TCA', 'TCA256x128G.bmp');
 Show_Image(1);
 
 % --- Executes on button press in pupiltracking.
