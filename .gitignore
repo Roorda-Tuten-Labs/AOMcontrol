@@ -1,3 +1,5 @@
 color_naming_offsets
 tempStimulus
 Experiments/*.mat
+BMP_files/*
+*.mat
