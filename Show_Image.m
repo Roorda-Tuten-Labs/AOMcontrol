@@ -1,9 +1,21 @@
 function Show_Image(loadon)
+% USAGE
+% Show_Image(loadon)
+%
+% INPUT
+% loadon    if set to 1, the image file specified in StimParams.filepath
+%           will be read. Otherwise, assumes that OrigFrame structure
+%           already has image matrix in OrigFrame.ir, OrigFrame.red, etc.
+%
+% OUTPUT
+% none      gui window is updated.
+%
+% DESCRIPTION
+% Function called by AOMcontrol.m for display in gui window.
+
 global SYSPARAMS CurFrame OrigFrame StimParams;
-if exist('handles','var') == 0;
+if exist('handles','var') == 0
     handles = guihandles;
-else
-    %donothing
 end
 h = get(handles.im_panel1, 'Child');
 set(h,'Visible', 'on');

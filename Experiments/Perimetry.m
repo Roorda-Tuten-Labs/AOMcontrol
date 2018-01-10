@@ -1,4 +1,4 @@
-function thresholds
+function Perimetry
 
 % --------------- Parameters --------------- %
 % ------------------------------------------- %
@@ -9,11 +9,10 @@ global SYSPARAMS StimParams VideoParams;
 % ---- Quest set up (need these to be in CFG).
 tGuess = log10(0.8);
 tGuessSD = log10(0.5);
-% frequency of Seeing that we are trying to find.
-pThreshold = 0.85; 
+
 % beta is the slope of a Weibull function. This parameter has been
-% estimated from real data (20076R=3.0, 20053R=4.4, 20092L=4.2)
-beta = 4.0;
+% estimated from real data (20076R=1.6, 20053R=2.3, 20092L=2.2)
+beta = 2.0;
 % default parameters:
 % 1-delta sets how high the function goes, i.e. the lapse rate
 delta = 0.01;
@@ -22,22 +21,32 @@ delta = 0.01;
 % of seeing. Set it to 0.03 or ~ the false alarm rate.
 gamma = 0.03;
 
+
 % now wait for ui to load
-CFG = SmallSpot.CFG_gui();
+CFG = perimetry_CFG_gui();
+
+% frequency of Seeing that we are trying to find.
+pThreshold = CFG.pThreshold; 
 
 % ---- Find user specified TCA ---- %
 tca_green = [CFG.green_x_offset CFG.green_y_offset];
 
 % ---- select cone locations ---- %
 % --------------------------------------------------------------- %
-[stim_offsets_xy, X_cross_loc, Y_cross_loc] = cone_select.main_gui(...
-    tca_green, VideoParams.rootfolder, CFG);
-if ~isnan(stim_offsets_xy)
-    cross_xy = [X_cross_loc, Y_cross_loc];
-else
-    % if stim_offsets_xy return with NaN then we cannot proceed any
-    % further. Therefore, we abort the mission here and now.
-    return
+try
+    [stim_offsets_xy, X_cross_loc, Y_cross_loc] = cone_select.main_gui(...
+        tca_green, VideoParams.rootfolder, CFG);
+    if ~isnan(stim_offsets_xy)
+        cross_xy = [X_cross_loc, Y_cross_loc];
+    else
+        % if stim_offsets_xy return with NaN then we cannot proceed any
+        % further. Therefore, we abort the mission here and now.
+        return
+    end
+catch
+    % if cone_select toolbox is not installed, just select four locations
+    % offset from the center of the raster by ten pixels
+    cross_xy = [-10 10; 10 10; 10 -10; -10 -10];
 end
 
 n_unique_locs = length(stim_offsets_xy);
@@ -363,10 +372,5 @@ for loc = 1:n_unique_locs
     end
     count = count + 1;
 end
-
-% plot FoS data
-% color_naming.plot_multi_cone_FoS(exp_data);
-
-
 
 end

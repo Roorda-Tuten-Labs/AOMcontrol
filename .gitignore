@@ -3,3 +3,5 @@ tempStimulus
 Experiments/*.mat
 BMP_files/*
 *.mat
+*~
+Experiments/*

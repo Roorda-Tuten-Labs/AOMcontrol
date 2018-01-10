@@ -85,6 +85,7 @@ else
     SYSPARAMS.aomuWPower(2) = 1; %Red
     SYSPARAMS.aomuWPower(3) = 1; %Green
     SYSPARAMS.aomuWPower(4) = 0; %Blue
+    SYSPARAMS.system = 4;
     StimParams.filepath = cell(0);
     StimParams.filepath{1} = '-'; % IR filename
     StimParams.filepath{2} = '-'; % Red filename

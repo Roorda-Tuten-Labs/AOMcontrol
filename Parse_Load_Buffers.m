@@ -1,9 +1,36 @@
 function Parse_Load_Buffers(parseon)
+% 
+% This function loads stimuli into buffer. 
+% 
+% USAGE
+% Parse_Load_Buffers(parseon)
+% 
+% Input
+% parseon   0 or 1. 
+%
+%           parseon=1 loads default settings. This is called in 
+%           exp.initialize and should be called at the beginning of each 
+%           experiment. 
+%
+%           parseon=0 loads buffers specified in StimParams. This function
+%           should be called after a new stimulus was written so that the
+%           bmp or buf files are loaded into memory.
+%           The relevant fields in StimParams are stimpath, fprefix, 
+%           sframe, eframe and fext. The function will load all files in 
+%           the stimpath with the prefix, frame numbers and fext according 
+%           to the values passed in each field. sframe = start frame 
+%           (e.g. 2), eframe = end frame (e.g. 4). The function would the 
+%           load files with the correct prefix (e.g. frame) and ext (i.e. 
+%           bmp or buf) between 2 and 4, inclusive.
+%
+% OUTPUT
+% Nothing. The stimulus files are loaded into memory.
+%
+
+        
 global SYSPARAMS StimParams OrigFrame;
-if exist('handles','var') == 0;
+if exist('handles','var') == 0
     handles = guihandles;
-else
-    %donothing
 end
 
 if parseon == 1 
@@ -38,7 +65,9 @@ if parseon == 1
     end
 
     if (indexbmp == 1 && indexbuf == 1)
-        set(handles.aom1_state, 'String','Error loading image sequence: You must select a folder that contains at least one bitmap file. Please try again.');
+        set(handles.aom1_state, 'String',...
+            ['Error loading image sequence: You must select a folder' ...
+            'that contains at least one bitmap file. Please try again.']);
         return
     end
 
@@ -52,7 +81,7 @@ if parseon == 1
         numfiles = size(imfnamesbmp,2);
         fext = 'bmp';
     end
-    for k = 1:numfiles;
+    for k = 1:numfiles
         fprefix = [];
         findex = [];
         if indexbuf > 1
@@ -64,7 +93,7 @@ if parseon == 1
         for i = 1:fnamesize
             if isempty(str2num(fname(i))) == 1 || fname(i) == 'j' || fname(i) == 'i'
                 fprefix = [fprefix,fname(i)]; %#ok<AGROW>
-            elseif isempty(str2num(fname(i))) == 0;
+            elseif isempty(str2num(fname(i))) == 0
                 findex = [findex, fname(i)]; %#ok<AGROW>
             end
         end
@@ -84,7 +113,9 @@ if parseon == 1
     aomindex = 1+size(findices,2);
     if SYSPARAMS.realsystem == 1
         if aomindex>1
-            command = ['Load#1#' dirname '#' fprefix '#' num2str(min(findices)) '#' num2str(max(findices)) '#' fext '#']; %#ok<NASGU>
+            command = ['Load#1#' dirname '#' fprefix '#' ...
+                num2str(min(findices)) '#' num2str(max(findices)) '#' ...
+                fext '#']; %#ok<NASGU>
             if SYSPARAMS.board == 'm'
                 MATLABAomControl32(command);
             else
@@ -102,7 +133,9 @@ if parseon == 1
     StimParams.mapfname = mapfname;    
 else
     if SYSPARAMS.realsystem == 1
-        command = ['Load#1#' StimParams.stimpath '#' StimParams.fprefix '#' num2str(StimParams.sframe) '#' num2str(StimParams.eframe) '#' StimParams.fext '#']; %#ok<NASGU>
+        command = ['Load#1#' StimParams.stimpath '#' ...
+            StimParams.fprefix '#' num2str(StimParams.sframe) '#' ...
+            num2str(StimParams.eframe) '#' StimParams.fext '#']; %#ok<NASGU>
         if SYSPARAMS.board == 'm'
             MATLABAomControl32(command);
         else

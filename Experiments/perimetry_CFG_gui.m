@@ -1,9 +1,9 @@
-function CFG = CFG_gui()
-    % CFG = HueScaling.CFG_gui()
+function CFG = perimetry_CFG_gui()
+    % CFG = perimetry_CFG_gui()
     %
     % Get experimental parameters (CFG).
         
-    CFG = HueScaling.CFG_load();
+    CFG = perimetry_CFG_load();
     CFG.run_calibration = 0;
     
     %  Construct the components
@@ -49,6 +49,17 @@ function CFG = CFG_gui()
             'Units','normalized',...
             'String', num2str(CFG.fieldsize),...
             'Position', [.05 row_y(6) .25 textbox_height]);
+        
+    uicontrol(ph,'Style','text',...
+                'String','threshold FoS',...
+                'Units','normalized',...
+                'Position',[.05 row_y(7) .25 .10]);
+            
+    pThreshold = uicontrol(ph,'Style','edit',...
+            'Units','normalized',...
+            'String', num2str(CFG.pThreshold),...
+            'Position', [.05 row_y(8) .25 textbox_height]);
+        
         
     uicontrol(ph,'Style','text',...
                 'String','stim size (pix)',...
@@ -102,16 +113,16 @@ function CFG = CFG_gui()
 %             'Units','normalized',...
 %             'String', num2str(CFG.nscale),...
 %             'Position', [.65 row_y(4) .275 textbox_height]); 
-        
-    uicontrol(ph,'Style','text',...
-                'String','system: aoslo, tslo, etc',...
-                'Units','normalized',...
-                'Position',[.65 row_y(5) .275 .10]);
-            
-    system = uicontrol(ph,'Style','edit',...
-            'Units','normalized',...
-            'String', CFG.system,...
-            'Position', [.65 row_y(6) .275 textbox_height]);
+%         
+%     uicontrol(ph,'Style','text',...
+%                 'String','system: aoslo, tslo, etc',...
+%                 'Units','normalized',...
+%                 'Position',[.65 row_y(5) .275 .10]);
+%             
+%     system = uicontrol(ph,'Style','edit',...
+%             'Units','normalized',...
+%             'String', CFG.system,...
+%             'Position', [.65 row_y(6) .275 textbox_height]);
         
 %     uicontrol(ph,'Style','text',...
 %                 'String','fraction blank',...
@@ -308,31 +319,25 @@ function CFG = CFG_gui()
     function get_current_CFG()
         CFG.initials = get(initials, 'String');
         CFG.stimshape = get(get(stimshape, 'SelectedObject'), 'Tag');
-        CFG.cone_selection = 'manual'; %get(get(cone_selection, 'SelectedObject'), 'Tag');
-%         CFG.brightness_scaling = str2double(get(get(brigntness_scaling, ...
-%             'SelectedObject'), 'Tag'));
+        CFG.cone_selection = 'manual';
         
         CFG.fieldsize = str2double(get(fieldsize, 'String'));
         CFG.presentdur = str2double(get(presentdur, 'String'));
         CFG.pupilsize = str2double(get(pupilsize, 'String'));
         CFG.ntrials = str2double(get(ntrials, 'String'));
-%         CFG.nscale = str2double(get(nscale, 'String'));
         CFG.gain = str2double(get(gain, 'String'));
         CFG.stimsize = str2double(get(stimsize, 'String'));
-%         CFG.fraction_blank = str2double(get(fraction_blank, 'String'));
         
-%         CFG.run_intensity_sequence = str2double(get(get(run_intensity_sequence,...
-%             'SelectedObject'), 'Tag'));
+        CFG.pThreshold = str2double(get(pThreshold, 'String'));
+
         
         CFG.red_x_offset = str2double(get(red_x_offset, 'String'));
         CFG.red_y_offset = str2double(get(red_y_offset, 'String'));
         CFG.green_x_offset = str2double(get(green_x_offset, 'String'));
         CFG.green_y_offset = str2double(get(green_y_offset, 'String'));
-        
-        CFG.system = get(system, 'String');
-        
+                
         % save updated parameters for next time.
-        save(fullfile('Experiments', 'small_spot_CFG.mat'), 'CFG');
+        save(fullfile('Experiments', 'perimetry_CFG.mat'), 'CFG');
         
     end    
 
