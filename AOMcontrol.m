@@ -2202,28 +2202,11 @@ set(handles.alignh_slider, 'Value', 32-StimParams.aomoffs(SYSPARAMS.aomoffsvsel,
 set(handles.alignh_val, 'String', num2str(StimParams.aomoffs(SYSPARAMS.aomoffsvsel,2)));
 
 % --- Executes when user attempts to close aom_main_figure.
-function aom_main_figure_CloseRequestFcn(hObject, eventdata, handles)
+%function aom_main_figure_CloseRequestFcn(hObject, eventdata, handles)
 % hObject    handle to aom_main_figure (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-% Hint: delete(hObject) closes the figure
-global SYSPARAMS VideoParams StimParams; %#ok<NUSED>
-if SYSPARAMS.realsystem == 1
-    if SYSPARAMS.board == 'm'
-        MATLABAomControl32('Stop#');
-        pause(.05);
-        MATLABAomControl32('ExtClockOff#');
-    else
-        netcomm('close',SYSPARAMS.netcommobj);
-        clear SYSPARAMS.netcommobj;
-        SYSPARAMS.netcommobj = 0;
-    end
-end
-save('Initialization.mat', 'SYSPARAMS', 'VideoParams', 'StimParams');
-rmappdata(0,'hAomControl');
-delete(hObject);
-close all;clear all;clc;
 
 % --- Executes on slider movement.
 function alignv_slider_Callback(hObject, eventdata, handles)
@@ -2484,3 +2467,45 @@ if SYSPARAMS.PupilTracker==0 %%CMP
     SYSPARAMS.PupilTracker=1;
     PupilVideoTracking;
 end
+
+
+% --- Executes during object deletion, before destroying properties.
+function aom_main_figure_DeleteFcn(hObject, eventdata, handles)
+% hObject    handle to aom_main_figure (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hint: delete(hObject) closes the figure
+
+% make sure that AOMcontrol is in the directory where AOMcontrol.m
+% lives
+cd(fileparts(which(mfilename)));
+
+global SYSPARAMS VideoParams StimParams; %#ok<NUSED>
+
+
+if SYSPARAMS.realsystem == 1
+    if SYSPARAMS.board == 'm'
+        MATLABAomControl32('Stop#');
+        pause(.05);
+        MATLABAomControl32('ExtClockOff#');
+    else
+        netcomm('close',SYSPARAMS.netcommobj);
+        clear SYSPARAMS.netcommobj;
+        SYSPARAMS.netcommobj = 0;
+    end
+end
+try
+    save('Initialization.mat', 'SYSPARAMS', 'VideoParams', 'StimParams');    
+    rmappdata(0,'hAomControl');
+    delete(hObject);
+catch ME
+    disp(ME)
+    close all; 
+    clearvars();
+    clc;
+
+end
+close all;
+clearvars();
+clc;
