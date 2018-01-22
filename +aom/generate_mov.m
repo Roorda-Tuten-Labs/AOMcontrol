@@ -1,7 +1,12 @@
-function Mov = generate_mov(CFG)
+function Mov = generate_mov(CFG,trial_dur)
+
+    if nargin < 2
+        trial_dur = 30; % in frames, default is 30 frames (1 sec)
+    end
 
     startframe = 3;
     fps = 30;
+
     
     % CFG.presentdur in msec
     presentdur = CFG.presentdur / 1000; 
@@ -18,7 +23,7 @@ function Mov = generate_mov(CFG)
    
     % This vector tells the aom which image to play during each frame
     aom0seq = [zeros(1, startframe - 1), ones(1, stimdur) .* framenum0, ...
-        zeros(1, 30 - startframe + 1 - stimdur)];
+        zeros(1, trial_dur - startframe + 1 - stimdur)];
     
     % Set location relative to IR raster. (0,0) in middle of raster?
     aom0locx = zeros(size(aom0seq));
@@ -30,7 +35,7 @@ function Mov = generate_mov(CFG)
 
     % ---------- AOM1 RED parameters ---------- %
     aom1seq = [zeros(1,startframe - 1), ones(1, stimdur) .* framenum0, ... 
-        zeros(1, 30 - startframe + 1 - stimdur)];
+        zeros(1, trial_dur - startframe + 1 - stimdur)];
     
     aom1pow = ones(size(aom1seq));
     aom1pow(:) = 0.0;
@@ -40,7 +45,7 @@ function Mov = generate_mov(CFG)
     % ---------- AOM2 GREEN parameters ---------- %
     % This vector tells the aom which image to play during each frame
     aom2seq = [zeros(1, startframe - 1), ones(1, stimdur) .* framenum1, ...
-        zeros(1, 30 - startframe + 1 - stimdur)];
+        zeros(1, trial_dur - startframe + 1 - stimdur)];
     
     % This sets the power for each frame
     aom2pow = ones(size(aom2seq));
