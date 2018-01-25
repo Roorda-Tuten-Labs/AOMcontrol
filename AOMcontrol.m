@@ -2424,7 +2424,7 @@ OrigFrame.green = 0;
 OrigFrame.blue = 0;
 StimParams.filepath{4} = '-';
 currentpath = cd;
-StimParams.stimpath = fullfile(currentpath, 'BMP_Files', 'TCA');
+StimParams.stimpath = [fullfile(currentpath, 'BMP_Files', 'TCA') filesep];
 if SYSPARAMS.realsystem == 1
     %set gain to zero
     commandstring = ['Gain#0#']; %gain=0
