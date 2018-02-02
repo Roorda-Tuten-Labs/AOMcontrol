@@ -5,7 +5,7 @@ function handles = setup_aom_gui()
 % OUTPUT
 % handle to aom gui
 
-    if exist('handles','var') == 0;
+    if exist('handles','var') == 0
         handles = guihandles;
     end
     

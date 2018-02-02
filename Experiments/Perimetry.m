@@ -90,7 +90,7 @@ fext = 'buf';
 % ----- now if cone_select.main_gui has been successful, initialize exp. 
 % Do this here so that if video was not good, then will not update
 % parameters in ICANDI.
-[hAomControl, aom_fig_handle, CFG] = exp.initialize(CFG, fext);
+[hAomControl, aom_fig_handle] = exp.initialize(CFG, fext);
 
 % ---- Setup Mov structure ---- %
 Mov = aom.generate_mov(CFG);

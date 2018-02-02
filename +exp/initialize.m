@@ -1,5 +1,22 @@
-function [hAomControl, aom_fig_handle, CFG] = initialize(CFG, file_ext)
+function [hAomControl, aom_fig_handle] = initialize(CFG, file_ext)
 % initialize an experiment.
+%
+% USAGE
+% [hAomControl, aom_fig_handle, CFG] = initialize(CFG, file_ext)
+%
+% INPUT
+% CFG       required fields 
+%               CFG.initials: Subject ID to be used for saving videos.
+%           optional fields
+%               CFG.videodur
+%               CFG.vidrecord
+%               CFG.run_calibration
+% file_ext  'bmp' or 'buf'. Default='bmp'
+% 
+% OUTPUT
+% hAomControl       handle to config data stored in appdata.
+% aom_fig_handle    handle to AOMcontrol gui window.
+%
 %
 global VideoParams StimParams SYSPARAMS
 
@@ -14,31 +31,39 @@ hAomControl = getappdata(0,'hAomControl');
 % default stimuli
 stim.create_default_stim();
 
-if CFG.run_calibration
-    % don't record videos when running calibration
-    VideoParams.vidrecord = 0;
-end
-
 if isstruct(CFG) == 1
-    if CFG.ok == 1
-        StimParams.stimpath = fullfile(pwd, 'tempStimulus', filesep);
-        VideoParams.vidprefix = CFG.initials;
 
+    % Set video to record unless otherwise specified.
+    VideoParams.vidrecord = 1;
+    if isfield(CFG, 'run_calibration')
+        if CFG.run_calibration 
+            % don't record videos when running calibration
+            VideoParams.vidrecord = 0;
+        end
+    end
+    
+    % Set the path to search for stimuli.
+    StimParams.stimpath = fullfile(pwd, 'tempStimulus', filesep);
+    
+    % Set Video prefix.
+    VideoParams.vidprefix = CFG.initials;
+
+    if isfield(CFG, 'record')
         if CFG.record == 1
             VideoParams.videodur = CFG.videodur;
         end
-
-        % sets VideoParam variables
-        set_VideoParams_PsyfileName();  
-        
-        % Appears to load stimulus into buffer. Called here with parameter
-        % set to 1. This seems to load some default settings. Later calls
-        % send user defined settings via netcomm.
-        Parse_Load_Buffers(1);
-
     else
-        return;
+        VideoParams.videodur = 1;
     end
+
+    % sets VideoParam variables
+    set_VideoParams_PsyfileName();  
+
+    % Appears to load stimulus into buffer. Called here with parameter
+    % set to 1. This seems to load some default settings. Later calls
+    % send user defined settings via netcomm.
+    Parse_Load_Buffers(1);
+
 end
 
 % get handle to aom gui
