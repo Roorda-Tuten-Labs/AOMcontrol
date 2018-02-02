@@ -336,6 +336,8 @@ function CFG = perimetry_CFG_gui()
         CFG.green_x_offset = str2double(get(green_x_offset, 'String'));
         CFG.green_y_offset = str2double(get(green_y_offset, 'String'));
                 
+        CFG.filename = 'Perimetry.mat';
+        
         % save updated parameters for next time.
         save(fullfile('Experiments', 'perimetry_CFG.mat'), 'CFG');
         

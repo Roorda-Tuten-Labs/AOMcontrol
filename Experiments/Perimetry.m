@@ -25,6 +25,7 @@ gamma = 0.03;
 % now wait for ui to load
 CFG = perimetry_CFG_gui();
 
+
 % frequency of Seeing that we are trying to find.
 pThreshold = CFG.pThreshold; 
 
