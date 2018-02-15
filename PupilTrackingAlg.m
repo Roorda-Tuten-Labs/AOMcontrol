@@ -1,6 +1,5 @@
  function PupilTrackingAlg(obj,event,himage)
-% June 20th for V1.22, implementing buffer
-DEPTH_OF_BUFFER=5;
+% August 17, changed the ROI to track feature on the right
 
 global SYSPARAMS StimParams %% CMP
 
@@ -22,7 +21,7 @@ s=size(event.Data);
 % end
 % event.Data=uint8(D);
 %********************************************
-set(himage, 'CData', event.Data);
+set(himage, 'CData', event.Data*4);
 
 
 xcBE=s(2);
@@ -48,24 +47,31 @@ col1=[1 0.5 0];
 
 % r1=s(1)-min(466,s(1))+1; r2=s(1);
 % c1=max(1,round(s(2)/2-233)); c2=min(s(2),round(s(2)/2 + 233-1));
-c1=s(2)-min(466,s(2))+1; c2=s(2);
-r1=max(1,round(s(1)/2-233)); r2=min(s(1),round(s(1)/2 + 233-1));
+% c1=s(2)-min(466,s(2))+1; c2=s(2);
+% r1=max(1,round(s(1)/2-233)); r2=min(s(1),round(s(1)/2 + 233-1));
 %c1=s(2)-min(466,s(2))+1; c2=s(2);
 
-
-if PupilParam.DisableTracking==0
+ 
+if PupilParam.DisableTracking==0 
     %[PupilParam.x1,PupilParam.x2,PupilParam.y1,PupilParam.y2,PupilParam.TrackError]=...
      %   TrackPupilV2016_6_4_ExtQuarter_WhiteP(double(rgb2gray(event.Data(r1:r2,c1:c2,1:3))),0);
+    %[PupilParam.x1,PupilParam.x2,PupilParam.y1,PupilParam.y2,PupilParam.TrackError]=...
+     %   TrackPupilV2016_6_6_ExtQuarter_WhiteP(double(rgb2gray(event.Data(r1:r2,c1:c2,1:3))),0);
+     %try;
     [PupilParam.x1,PupilParam.x2,PupilParam.y1,PupilParam.y2,PupilParam.TrackError]=...
-        TrackPupilV2016_6_6_ExtQuarter_WhiteP(double(rgb2gray(event.Data(r1:r2,c1:c2,1:3))),0);
+        TrackPupilV2017_Retro_Double_9(double(rgb2gray(event.Data)),0);
+      %catch ME
+%          %[PupilParam.x1,PupilParam.x2,PupilParam.y1,PupilParam.y2,PupilParam.TrackError]=TrackPupilV2017_Retro_Double_5(double(rgb2gray(event.Data)),1);
+     %     keyboard;
+     % end
 else
     Error=0;
     PupilParam.x1=-1; PupilParam.x2=-1; PupilParam.y1=-1; PupilParam.y2=-1; PupilParam.TrackError=-10;
 end
 
-    
-PupilParam.x1=PupilParam.x1+c1; PupilParam.x2=PupilParam.x2+c1;
-PupilParam.y1=PupilParam.y1+r1; PupilParam.y2=PupilParam.y2+r1;
+  
+% PupilParam.x1=PupilParam.x1+c1; PupilParam.x2=PupilParam.x2+c1;
+% PupilParam.y1=PupilParam.y1+r1; PupilParam.y2=PupilParam.y2+r1;
 x0=mean([PupilParam.x1,PupilParam.x2]);
 y0=mean([PupilParam.y1,PupilParam.y2]);
 
@@ -86,6 +92,8 @@ if PupilParam.Sync==1 & etime(clock,[2000 1 1 0 0 0]) - SYSPARAMS.PupilDuration 
 else
     if gc(1)==1, set(hps(6),'String','Wait for Sync'); set(hps(6),'BackgroundColor',[0.75 0  0]); end    
 end
+
+
 
 h=get(himage,'Parent');
 set(h,'NextPlot','add')
@@ -153,7 +161,6 @@ if sum(PupilParam.fps==0)==0
 else 
     Current_fps=0;
 end
-SYSPARAMS.PupilCamerafps=Current_fps;
  %if Current_fps>PupilParam.Camerafps, Current_fps=PupilParam.Camerafps; end
 
 
@@ -172,8 +179,6 @@ else
     delete(PupilParam.r4);  PupilParam.r4=plot(h,1,1);        
 end
 
-PupilParam.Ltotaloffx=PupilParam.Ltotaloffx+1; if PupilParam.Ltotaloffx > DEPTH_OF_BUFFER, PupilParam.Ltotaloffx=1; end
-
 if PupilParam.TrackError>-1,
     c=[0.75 0.75 0.75];
     if PupilParam.ShowReference==1
@@ -187,8 +192,6 @@ if PupilParam.TrackError>-1,
     end
     %Stringhps9=['fps=',num2str(Current_fps),' dx=',num2str(difx),' dy=',num2str(dify)];
     Distance=sqrt(difx^2+dify^2)/PupilParam.Pixel_calibration;
-    
-    
     SYSPARAMS.PupilTCAx=PupilParam.TCAmmX*difx/PupilParam.Pixel_calibration;
     SYSPARAMS.PupilTCAy=PupilParam.TCAmmY*dify/PupilParam.Pixel_calibration;
     
@@ -200,18 +203,13 @@ if PupilParam.TrackError>-1,
         % SYSPARAMS.PupilTCAx and SYSPARAMS.PupilTCAy is arcmn of TCA based on
         % subject's own ratio
         pixperarcmin = SYSPARAMS.pixelperdeg/60;
-        xoffset=round(SYSPARAMS.PupilTCAx(end)*pixperarcmin);   % in pixels
-        yoffset=round(SYSPARAMS.PupilTCAy(end)*pixperarcmin);   % in pixels
-        
+        xoffset=round(SYSPARAMS.PupilTCAx*pixperarcmin);   % in pixels
+        yoffset=round(SYSPARAMS.PupilTCAy*pixperarcmin);   % in pixels
         if (abs(xoffset)>0 | abs(yoffset)>0) & PupilParam.ShowReference==1
-            
-            PupilParam.totaloffx = StimParams.aomoffs(1, 1) + xoffset; %StimParams.aomoffs(1, 1) = xoffset; % changed by AEB on 5/30
-            PupilParam.totaloffy = StimParams.aomoffs(1, 2) - yoffset; %StimParams.aomoffs(1, 2) = -yoffset; % changed by AEB on 5/30
-            
+            StimParams.aomoffs(1, 1) = xoffset;
+            StimParams.aomoffs(1, 2) = -yoffset;
             if SYSPARAMS.realsystem == 1
-                % aligncommand changed on 5/30/17 by AEB
-                %aligncommand = ['UpdateOffset#' num2str(StimParams.aomoffs(1, 1)) '#' num2str(StimParams.aomoffs(1, 2)) '#' num2str(StimParams.aomoffs(2, 1)) '#' num2str(StimParams.aomoffs(2, 2)) '#' num2str(StimParams.aomoffs(3, 1)) '#' num2str(StimParams.aomoffs(3, 2)) '#'];   %#ok<NASGU>
-                aligncommand = ['UpdateOffset#' num2str(PupilParam.totaloffx) '#' num2str(PupilParam.totaloffy) '#' num2str(StimParams.aomoffs(2, 1)) '#' num2str(StimParams.aomoffs(2, 2)) '#' num2str(StimParams.aomoffs(3, 1)) '#' num2str(StimParams.aomoffs(3, 2)) '#'];   %#ok<NASGU>
+                aligncommand = ['UpdateOffset#' num2str(StimParams.aomoffs(1, 1)) '#' num2str(StimParams.aomoffs(1, 2)) '#' num2str(StimParams.aomoffs(2, 1)) '#' num2str(StimParams.aomoffs(2, 2)) '#' num2str(StimParams.aomoffs(3, 1)) '#' num2str(StimParams.aomoffs(3, 2)) '#'];   %#ok<NASGU>
                 if SYSPARAMS.board == 'm'
                     MATLABAomControl32(aligncommand);
                 else
@@ -226,12 +224,12 @@ if PupilParam.TrackError>-1,
     %*********************************************************************
     %*********************************************************************
     
-    SYSPARAMS.Pupildiffx(PupilParam.Ltotaloffx) = difx/PupilParam.Pixel_calibration;
-    SYSPARAMS.Pupildiffy(PupilParam.Ltotaloffx) = dify/PupilParam.Pixel_calibration;
+    SYSPARAMS.Pupildiffx = difx/PupilParam.Pixel_calibration;
+    SYSPARAMS.Pupildiffy = dify/PupilParam.Pixel_calibration;
     if Current_fps<10,
-        Stringhps9=sprintf('Hz= %d mm(%.1f, %.1f) TCA=%.1f',Current_fps,difx/PupilParam.Pixel_calibration,dify/PupilParam.Pixel_calibration,sqrt((SYSPARAMS.PupilTCAx(end))^2 + (SYSPARAMS.PupilTCAy(end))^2)); 
+        Stringhps9=sprintf('Hz= %d mm(%.1f, %.1f) TCA=%.1f',Current_fps,difx/PupilParam.Pixel_calibration,dify/PupilParam.Pixel_calibration,sqrt((SYSPARAMS.PupilTCAx)^2 + (SYSPARAMS.PupilTCAy)^2)); 
     else
-        Stringhps9=sprintf('Hz=%d mm(%.1f, %.1f) TCA=%.1f',Current_fps,difx/PupilParam.Pixel_calibration,dify/PupilParam.Pixel_calibration,sqrt((SYSPARAMS.PupilTCAx(end))^2 + (SYSPARAMS.PupilTCAy(end))^2));
+        Stringhps9=sprintf('Hz=%d mm(%.1f, %.1f) TCA=%.1f',Current_fps,difx/PupilParam.Pixel_calibration,dify/PupilParam.Pixel_calibration,sqrt((SYSPARAMS.PupilTCAx)^2 + (SYSPARAMS.PupilTCAy)^2));
     end
     if Distance>PupilParam.TolleratedPupilDistance, beep; end
 else
@@ -243,8 +241,6 @@ else
     end
     SYSPARAMS.PupilTCAx=-10000;
     SYSPARAMS.PupilTCAy=-10000;
-    SYSPARAMS.Pupildiffx(PupilParam.Ltotaloffx) = -10000;
-    SYSPARAMS.Pupildiffy(PupilParam.Ltotaloffx) = -10000;
     %Stringhps9=['fps=',num2str(Current_fps),' no tracking'];
 end
 

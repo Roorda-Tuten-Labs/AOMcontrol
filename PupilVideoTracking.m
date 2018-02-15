@@ -54,8 +54,10 @@ function PupilVideoTracking_OpeningFcn(hObject, eventdata, handles, varargin)
 
 % Choose default command line output for PupilVideoTracking
 handles.output = hObject;
-set(hObject,'Name','PupilVideoTracking V1.22')
-
+set(hObject,'Name','PupilVideoTracking V1.26')
+% V1.24 - Sept 9 - for the double pupil artifact
+% V1.25 - Nov 21 - for dimmer videos
+% V1.26 - Feb 13 - bug with DataSync and better traccking for dimmer pupils
 % Update handles structure
 guidata(hObject, handles);
 global PupilParam;
@@ -158,9 +160,9 @@ global SYSPARAMS PupilParam;
 SYSPARAMS.PupilTracker=0;
 DateString = datestr(clock); Spaceidx=findstr(DateString,' '); DateString(Spaceidx)='_'; Spaceidx=findstr(DateString,':'); DateString(Spaceidx)='_';
 Prefix=get(handles.edit3,'String');
-if isfield(PupilParam,'DataSync'), 
+if isfield(PupilParam,'DataSync'),
     PupilData=PupilParam.DataSync;
-    save(['.\VideoAndRef\','Trial_DataPupil_',Prefix,'_',DateString], 'PupilData'); 
+    save(['.\VideoAndRef\','Trial_DataPupil_',Prefix,'_',DateString], 'PupilData');
 end
 close;
 
@@ -184,7 +186,7 @@ if  get(hObject,'UserData')==0,
     %vid= videoinput('winvideo', 3,'RGB24_1024x768');    %office 416
     %vid= videoinput('winvideo', 2,'RGB24_1280x720');
     %vid= videoinput('winvideo', 1,'RGB24_640x480');
-    
+    % d=imaqhwinfo('winvideo'); d.DeviceInfo.SupportedFormats; get(vid); get(vid,'source')
     
     vidRes = vid.VideoResolution;
     nBands = vid.NumberOfBands;
@@ -246,11 +248,22 @@ if  get(hObject,'UserData')==0,
     %preview(vid, h);
     %preview(vid, get(handles.axes1,'Children'));
     PupilParam.Video=1;
-    
+%     CameraSetting.Brightness=0;
+%     CameraSetting.Contrast=0;
+%     CameraSetting.Exposure=-3;
+%     CameraSetting.ExposureMode=1; %1=manual, 2 =auto
+%     CameraSetting.Gain=31;
+%     CameraSetting.Gamma=100;
+%     CameraSetting.Hue=0;
+%     CameraSetting.Saturation=64;
+%     CameraSetting.Sharpness=0;
+%     CameraSetting.ROI=[128 0 768 768];
+%     SetCameraSetting(handles,CameraSetting)
     SetCameraValues(vid,CameraSetting);
 end
 if  get(hObject,'UserData')==1,
     closepreview(vid);
+    delete(vid); vid=videoinput('winvideo', 1); delete(vid); 
     PupilParam.Video=0;
     Prefix=get(handles.edit3,'String');
     set(handles.pushbutton5,'String','Save Video');
@@ -531,7 +544,7 @@ else
     set(hObject,'String','Sync Save');
     set(hObject,'BackgroundColor',[0.941176 0.941176 0.941176]); set(hObject,'ForegroundColor',[0 0 0]);
     PupilParam.Sync=0;
-    if ~isempty(PupilParam.DataSync)  
+    if ~isempty(PupilParam.DataSync)
         DateString = datestr(clock); Spaceidx=findstr(DateString,' '); DateString(Spaceidx)='_'; Spaceidx=findstr(DateString,':'); DateString(Spaceidx)='_';
         Prefix=get(handles.edit3,'String');
         PupilData=PupilParam.DataSync;
@@ -552,11 +565,11 @@ if CameraSetting.ExposureMode==1
     CameraSetting.ExposureMode=2;
     %     disp(CameraSetting.Exposure)
     %     disp(CameraSetting.Gain)
-    SetCameraSetting(handles,CameraSetting)
-    set(hObject,'String','Auto');
+    % SetCameraSetting(handles,CameraSetting)
+    set(hObject,'String','Manual');
 else
     CameraSetting.ExposureMode=1;
-    set(hObject,'String','Manual');
+    set(hObject,'String','Auto');
 end
 if get(handles.pushbutton2,'UserData')==1, %video in progress
     SetCameraValues(vid,CameraSetting);
@@ -841,7 +854,7 @@ function pushbutton13_Callback(hObject, eventdata, handles)
 % hObject    handle to pushbutton13 (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-global CameraSetting;    
+global CameraSetting;
 CameraSetting.Brightness=0;
 CameraSetting.Contrast=0;
 CameraSetting.Exposure=-13;
@@ -856,7 +869,7 @@ global vid;
 SetCameraSetting(handles,CameraSetting)
 if get(handles.pushbutton2,'UserData')==1, %video in progress
     SetCameraValues(vid,CameraSetting);
-    set(handles.pushbutton10,'String','Auto');
+    set(handles.pushbutton10,'String','Manual');
 end
 
 
@@ -880,8 +893,8 @@ else
     
     if SYSPARAMS.realsystem == 1
         % AEB changed aligncommand on 5/30/2017
-        % removes the TCA-pupil correction from the aom offsets 
-        global StimParams 
+        % removes the TCA-pupil correction from the aom offsets
+        global StimParams
         aligncommand = ['UpdateOffset#' num2str(StimParams.aomoffs(1, 1)) '#' num2str(StimParams.aomoffs(1, 2)) '#' num2str(StimParams.aomoffs(2, 1)) '#' num2str(StimParams.aomoffs(2, 2)) '#' num2str(StimParams.aomoffs(3, 1)) '#' num2str(StimParams.aomoffs(3, 2)) '#'];   %#ok<NASGU>
         %aligncommand = ['UpdateOffset#' num2str(0) '#' num2str(0) '#' num2str(0) '#' num2str(0) '#' num2str(0) '#' num2str(0) '#'];   %#ok<NASGU>
         if SYSPARAMS.board == 'm'
@@ -895,7 +908,7 @@ else
     set(hObject,'String','Enable TCA Correction');
     set(hObject,'BackgroundColor',OrgnlColor);
     set(hObject,'ForegroundColor',[0 0 0]);
-    % 
+    %
 end
 
 
@@ -923,25 +936,26 @@ function pushbutton16_Callback(hObject, eventdata, handles)
 global vid;
 global CameraSetting;
 global PupilParam;
-if CameraSetting.ROI(4)==768
-    set(hObject,'String','Zoom Out');
-    CameraSetting.ROI=[312  184 400 400];
-    PupilParam.AvoidedBorder=round(CameraSetting.ROI(3)/5.1);
-else
-    set(hObject,'String','Zoom In');
-    CameraSetting.ROI=[128 0 768 768];
-    PupilParam.AvoidedBorder=round(CameraSetting.ROI(3)/5.1);
-end
-
-SetCameraValues(vid,CameraSetting);
 
 if  get(handles.pushbutton2,'UserData')==1,
-    stoppreview(vid)
+    if CameraSetting.ROI(4)==768
+        set(hObject,'String','Zoom Out');
+        CameraSetting.ROI=[312  184 400 400];
+        PupilParam.AvoidedBorder=round(CameraSetting.ROI(3)/5.1);
+    else
+        set(hObject,'String','Zoom In');
+        CameraSetting.ROI=[128 0 768 768];
+        PupilParam.AvoidedBorder=round(CameraSetting.ROI(3)/5.1);
+    end
+    
+    %%%stoppreview(vid)
+    delete(vid); vid=videoinput('winvideo', 1); delete(vid); vid= videoinput('winvideo', 1,'RGB24_1024x768');
     nBands = vid.NumberOfBands;
     axes(handles.axes1);
     hold off
     %set(ha,'DataAspectRatio',[(CameraSetting.ROI(3) - CameraSetting.ROI(1)) (CameraSetting.ROI(4)-CameraSetting.ROI(2)) 1]);
     %set(handles.axes1,'BeingDeleted','on')
+    
     h = image(zeros(CameraSetting.ROI(4),CameraSetting.ROI(3), nBands), 'parent', handles.axes1);
     %     set(handles.axes1,'CameraPosition',[((CameraSetting.ROI(3) - CameraSetting.ROI(1))/2 +0.5)...
     %         ((CameraSetting.ROI(4)-CameraSetting.ROI(2))./2+0.5) 9.5]);
@@ -952,7 +966,7 @@ if  get(handles.pushbutton2,'UserData')==1,
     %
     %     set(handles.axes1,'CameraTargetMode','manual')
     %setappdata(h,'UpdatePreviewWindowFcn',@PupilTrackingAlg);
-    
+    vid= videoinput('winvideo', 1,'RGB24_1024x768');
     preview(vid,h);
     axes(handles.axes1);
     hold on
@@ -1001,7 +1015,9 @@ if  get(handles.pushbutton2,'UserData')==1,
     setappdata(h,'UpdatePreviewWindowFcn',@PupilTrackingAlg);
     
     PupilParam.Video=1;
+    SetCameraValues(vid,CameraSetting);
 end
+
 
 
 
@@ -1045,7 +1061,7 @@ function edit7_Callback(hObject, eventdata, handles)
 %        str2double(get(hObject,'String')) returns contents of edit7 as a double
 global PupilParam
 load CalibrationSetting
-Str=get(hObject,'String'); idx=strfind(Str,'/'); 
+Str=get(hObject,'String'); idx=strfind(Str,'/');
 if length(idx)==1
     CalibrationSetting(2)=str2num(Str(1:idx-1));
     CalibrationSetting(3)=str2num(Str((idx+1):end));
@@ -1123,6 +1139,8 @@ global SYSPARAMS PupilParam
 SYSPARAMS.PupilTracker=0;
 DateString = datestr(clock); Spaceidx=findstr(DateString,' '); DateString(Spaceidx)='_'; Spaceidx=findstr(DateString,':'); DateString(Spaceidx)='_';
 Prefix=get(handles.edit3,'String');
-PupilData=PupilParam.DataSync;
-if ~isempty(PupilParam.DataSync), save(['.\VideoAndRef\','Trial_DataPupil_',Prefix,'_',DateString], 'PupilData'); end
+if isfield(PupilParam,'DataSync')
+    PupilData=PupilParam.DataSync;
+    if ~isempty(PupilParam.DataSync), save(['.\VideoAndRef\','Trial_DataPupil_',Prefix,'_',DateString], 'PupilData'); end
+end
 delete(hObject);
