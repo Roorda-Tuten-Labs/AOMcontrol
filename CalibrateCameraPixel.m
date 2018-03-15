@@ -17,3 +17,4 @@ fprintf('Click on the two mark for %f mm\n',DistanceMM);
 load CalibrationSetting
 CalibrationSetting(1)=sqrt(diff(X).^2 + diff(Y).^2)/DistanceMM;
 save CalibrationSetting CalibrationSetting
+closepreview(obj);
