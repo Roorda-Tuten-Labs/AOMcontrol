@@ -71,6 +71,7 @@ if exist('Initialization.mat','file')==2
     SYSPARAMS.aompowerLvl(1) = 1; %IR
     SYSPARAMS.aompowerLvl(2) = 1; %Red
     SYSPARAMS.aompowerLvl(3) = 1; %Green
+ 
 else
     SYSPARAMS.aoms_enable = zeros(4,1);
     SYSPARAMS.aoms_enable(1) = 1;
@@ -91,13 +92,16 @@ else
     StimParams.filepath{2} = '-'; % Red filename
     StimParams.filepath{3} = '-'; % Green filename
     StimParams.filepath{4} = '-'; % Blue filename
-    StimParams.aomoffs(1,1) = 0; %Red OffsX
-    StimParams.aomoffs(1,2) = 0; %Red OffsY
-    StimParams.aomoffs(2,1) = 0; %Green OffsX
-    StimParams.aomoffs(2,2) = 0; %Green OffsY
-    StimParams.aomoffs(3,1) = 0; %Blue OffsX
-    StimParams.aomoffs(3,2) = 0; %Blue OffsY
+
 end
+% Over-ride so that aomoffs are always set to zero. They should not be
+% saved from experiment to experiment.
+StimParams.aomoffs(1,1) = 0; %Red OffsX
+StimParams.aomoffs(1,2) = 0; %Red OffsY
+StimParams.aomoffs(2,1) = 0; %Green OffsX
+StimParams.aomoffs(2,2) = 0; %Green OffsY
+StimParams.aomoffs(3,1) = 0; %Blue OffsX
+StimParams.aomoffs(3,2) = 0; %Blue OffsY   
 
 SYSPARAMS.PupilTracker=0;       %%cmp
 SYSPARAMS.PupilDuration=0;      %%cmp
