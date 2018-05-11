@@ -40,5 +40,5 @@ stimulus = rot90(stimulus);
 
 % save images
 savedir = fullfile(pwd, 'tempStimulus');
-util.check_for_dir(savedir);
+files.check_for_dir(savedir);
 imwrite(stimulus, fullfile(savedir, ['frame' num2str(first_frameN) '.bmp']));
