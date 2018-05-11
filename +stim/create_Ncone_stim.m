@@ -40,7 +40,10 @@ stimulus = flipud(rot90(stimulus));
 
 % save images
 savedir = fullfile(pwd, 'tempStimulus');
-files.check_for_dir(savedir);
+if isdir(fullfile(pwd, 'tempStimulus')) == 0
+    mkdir(fullfile(pwd, 'tempStimulus'));
+end
+
 if strcmpi(extension, 'bmp')
     imwrite(stimulus, fullfile(savedir, ['frame' num2str(frameN) ...
         '.bmp']));
