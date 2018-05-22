@@ -15,7 +15,7 @@ function Show_Image(loadon)
 
 global SYSPARAMS CurFrame OrigFrame StimParams;
 if exist('handles','var') == 0
-    handles = guihandles;
+    handles = get_aom_gui_handle();
 end
 h = get(handles.im_panel1, 'Child');
 set(h,'Visible', 'on');

@@ -3,10 +3,8 @@ function PlayMovie()
 %
 
 global SYSPARAMS StimParams VideoParams; %#ok<NUSED>
-if exist('handles','var') == 0;
-    handles = guihandles;
-else
-    %donothing
+if exist('handles','var') == 0
+    handles = get_aom_gui_handle();
 end
 
 hAomControl = getappdata(0,'hAomControl');
