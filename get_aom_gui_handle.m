@@ -1,5 +1,12 @@
 function handle = get_aom_gui_handle()
-% Return handle to aom gui. Will sort through open figures.
+% Return handle to AOMcontrol gui. 
+%
+% USAGE
+% handle = get_aom_gui_handle()
+%
+% OUTPUT
+% This routine will sort through open figures to find AOMcontrol and return
+% a handle to it.
 
 figHandles = get(groot, 'Children');
 
