@@ -384,8 +384,8 @@ set(handles.bufferlist, 'Visible', 'On');
 
 function seq_radio1_Callback(hObject, eventdata, handles)  %#ok<DEFNU>
 global SYSPARAMS;
-if exist('handles','var') == 0;
-    handles = guihandles;
+if exist('handles','var') == 0
+    handles = get_aom_gui_handle();
 else
     %donothing
 end
@@ -401,7 +401,7 @@ set(handles.bufferlist, 'Visible', 'Off');
 function exp_radio1_Callback(hObject, eventdata, handles)  %#ok<DEFNU>
 global SYSPARAMS;
 if exist('handles','var') == 0;
-    handles = guihandles;
+    handles = get_aom_gui_handle();
 else
     %donothing
 end
@@ -470,7 +470,7 @@ function LoadImageSequence(aom)
 global StimParams SYSPARAMS
 
 if exist('handles','var') == 0;
-    handles = guihandles;
+    handles = get_aom_gui_handle();
 else
     %donothing
 end
@@ -579,7 +579,7 @@ function loadBMP(hObject, eventdata, handles)
 global SYSPARAMS VideoParams CurFrame OrigFrame StimParams; %#ok<NUSED>
 
 if exist('handles','var') == 0
-    handles = guihandles;
+    handles = get_aom_gui_handle();
 else
     %donothing
 end
@@ -1157,7 +1157,7 @@ function aom1_onoff_Callback(hObject, eventdata, handles)
 global SYSPARAMS CurFrame OrigFrame; %#ok<NUSED>
 
 if exist('handles','var') == 0;
-    handles = guihandles;
+    handles = get_aom_gui_handle();
 else
     %donothing
 end
@@ -1410,7 +1410,7 @@ function loop_sequence_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 global SYSPARAMS;
 if exist('handles','var') == 0;
-    handles = guihandles;
+    handles = get_aom_gui_handle();
 else
     %donothing
 end
@@ -1434,13 +1434,13 @@ function power_slider_Callback(hObject, eventdata, handles) %#ok<DEFNU>
 global SYSPARAMS;
 
 if exist('handles','var') == 0;
-    handles = guihandles;
+    handles = get_aom_gui_handle();
 else
     %donothing
 end
 
 hAomControl = getappdata(0,'hAomControl');
-handles = guihandles;
+handles = get_aom_gui_handle();
 powerLvl = get(handles.power_slider, 'Value');
 percent = num2str(round(powerLvl*100));
 switch SYSPARAMS.aom_pow_sel
@@ -1485,7 +1485,7 @@ end
 % --- Executes on button press in aom0_power_radio.
 function aom0_power_radio_Callback(hObject, eventdata, handles)
 global SYSPARAMS;
-handles = guihandles;
+handles = get_aom_gui_handle();
 set(handles.power_slider, 'Value', SYSPARAMS.aompowerLvl(1));
 
 aom0uWset = num2str((SYSPARAMS.aompowerLvl(1)*SYSPARAMS.aomuWPower(1)),'%3.0f');
@@ -1500,7 +1500,7 @@ SYSPARAMS.aom_pow_sel = 0;
 % --- Executes on button press in aom1_power_radio.
 function aom1_power_radio_Callback(hObject, eventdata, handles)
 global SYSPARAMS;
-handles = guihandles;
+handles = get_aom_gui_handle();
 set(handles.power_slider, 'Value', SYSPARAMS.aompowerLvl(2));
 
 aom1uWset = num2str((SYSPARAMS.aompowerLvl(2)*SYSPARAMS.aomuWPower(2)),'%3.0f');
@@ -1515,7 +1515,7 @@ SYSPARAMS.aom_pow_sel = 1;
 % --- Executes on button press in aom2_power_radio.
 function aom2_power_radio_Callback(hObject, eventdata, handles)
 global SYSPARAMS;
-handles = guihandles;
+handles = get_aom_gui_handle();
 set(handles.power_slider, 'Value', SYSPARAMS.aompowerLvl(3));
 
 aom2uWset = num2str((SYSPARAMS.aompowerLvl(3)*SYSPARAMS.aomuWPower(3)),'%3.0f');
@@ -1530,7 +1530,7 @@ SYSPARAMS.aom_pow_sel = 2;
 % --- Executes on button press in aom3_power_radio.
 function aom3_power_radio_Callback(hObject, eventdata, handles)
 global SYSPARAMS;
-handles = guihandles;
+handles = get_aom_gui_handle();
 set(handles.power_slider, 'Value', SYSPARAMS.aompowerLvl(4));
 
 aom3uWset = num2str((SYSPARAMS.aompowerLvl(4)*SYSPARAMS.aomuWPower(4)),'%3.0f');
@@ -1546,7 +1546,7 @@ function power_uW_Callback(hObject, eventdata, handles) %#ok<DEFNU>
 user_entry = get(hObject,'string');
 
 if exist('handles','var') == 0;
-    handles = guihandles;
+    handles = get_aom_gui_handle();
 else
     %donothing
 end
@@ -1881,7 +1881,7 @@ function ir_on_off_Callback(hObject, eventdata, handles)
 % Hint: get(hObject,'Value') returns toggle state of ir_on_off
 global SYSPARAMS;
 if exist('handles', 'var') == 0;
-    handles = guihandles;
+    handles = get_aom_gui_handle();
 else
     %donothing
 end
@@ -1908,7 +1908,7 @@ function red_on_off_Callback(hObject, eventdata, handles)
 % Hint: get(hObject,'Value') returns toggle state of red_on_off
 global SYSPARAMS;
 if exist('handles', 'var') == 0;
-    handles = guihandles;
+    handles = get_aom_gui_handle();
 else
     %donothing
 end
@@ -1935,7 +1935,7 @@ function green_on_off_Callback(hObject, eventdata, handles)
 % Hint: get(hObject,'Value') returns toggle state of green_on_off
 global SYSPARAMS;
 if exist('handles', 'var') == 0;
-    handles = guihandles;
+    handles = get_aom_gui_handle();
 else
     %donothing
 end
@@ -1962,7 +1962,7 @@ function blue_on_off_Callback(hObject, eventdata, handles)
 % Hint: get(hObject,'Value') returns toggle state of blue_on_off
 global SYSPARAMS;
 if exist('handles', 'var') == 0;
-    handles = guihandles;
+    handles = get_aom_gui_handle();
 else
     %donothing
 end
@@ -1987,12 +1987,12 @@ function display_button_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 global StimParams;
 if exist('handles', 'var') == 0;
-    handles = guihandles;
+    handles = get_aom_gui_handle();
 else
     %donothing
 end
 if exist('handles','var') == 0;
-    handles = guihandles;
+    handles = get_aom_gui_handle();
 else
     %donothing
 end
@@ -2165,7 +2165,7 @@ function aligngrh_Callback(hObject, eventdata, handles)
 
 % Hint: get(hObject,'Value') returns toggle state of aligngrh
 global SYSPARAMS StimParams;
-handles = guihandles;
+handles = get_aom_gui_handle();
 SYSPARAMS.aomoffsvsel = 2;
 set(handles.aligngrh,'Value',1);
 set(handles.alignredh,'Value',0);
@@ -2181,7 +2181,7 @@ function alignredh_Callback(hObject, eventdata, handles)
 
 % Hint: get(hObject,'Value') returns toggle state of alignredh
 global SYSPARAMS StimParams;
-handles = guihandles;
+handles = get_aom_gui_handle();
 SYSPARAMS.aomoffsvsel = 1;
 set(handles.alignredh,'Value',1);
 set(handles.aligngrh,'Value',0);
@@ -2197,7 +2197,7 @@ function alignblueh_Callback(hObject, eventdata, handles)
 
 % Hint: get(hObject,'Value') returns toggle state of alignblueh
 global SYSPARAMS StimParams;
-handles = guihandles;
+handles = get_aom_gui_handle();
 SYSPARAMS.aomoffsvsel = 3;
 set(handles.alignblueh,'Value',1);
 set(handles.aligngrh,'Value',0);
@@ -2258,7 +2258,7 @@ function alignredv_Callback(hObject, eventdata, handles)
 
 % Hint: get(hObject,'Value') returns toggle state of alignredv
 global SYSPARAMS StimParams;
-handles = guihandles;
+handles = get_aom_gui_handle();
 SYSPARAMS.aomoffshsel = 1;
 set(handles.alignredv,'Value',1);
 set(handles.aligngrv,'Value',0);
@@ -2275,7 +2275,7 @@ function aligngrv_Callback(hObject, eventdata, handles)
 
 % Hint: get(hObject,'Value') returns toggle state of aligngrv
 global SYSPARAMS StimParams;
-handles = guihandles;
+handles = get_aom_gui_handle();
 SYSPARAMS.aomoffshsel = 2;
 set(handles.aligngrv,'Value',1);
 set(handles.alignredv,'Value',0);
@@ -2292,7 +2292,7 @@ function alignbluev_Callback(hObject, eventdata, handles)
 
 % Hint: get(hObject,'Value') returns toggle state of alignbluev
 global SYSPARAMS StimParams;
-handles = guihandles;
+handles = get_aom_gui_handle();
 SYSPARAMS.aomoffshsel = 3;
 set(handles.alignbluev,'Value',1);
 set(handles.aligngrv,'Value',0);

@@ -3,7 +3,7 @@ function TerminateExp
 %
 
 if exist('handles','var') == 0
-    handles = guihandles;
+    handles = get_aom_gui_handle();
     set(handles.aom1_state, 'String', '..Experiment Aborted!..');
     set(handles.display_button, 'Enable', 'on');
     set(handles.display_button, 'String', 'Config & Start');
