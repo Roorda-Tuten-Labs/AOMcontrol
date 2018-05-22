@@ -30,7 +30,7 @@ function Parse_Load_Buffers(parseon)
         
 global SYSPARAMS StimParams OrigFrame;
 if exist('handles','var') == 0
-    handles = guihandles;
+    handles = get_aom_gui_handle();
 end
 
 if parseon == 1 

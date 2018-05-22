@@ -6,7 +6,7 @@ function handles = setup_aom_gui()
 % handle to aom gui
 
     if exist('handles','var') == 0
-        handles = guihandles;
+        handles = get_aom_gui_handle();
     end
     
     set(handles.aom1_state, 'String', 'Configuring Experiment...');
