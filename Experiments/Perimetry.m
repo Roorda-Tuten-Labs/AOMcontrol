@@ -7,7 +7,7 @@ function Perimetry
 global SYSPARAMS StimParams VideoParams;
 
 % ---- Quest set up (need these to be in CFG).
-tGuess = log10(0.8);
+tGuess = log10(0.1);
 tGuessSD = log10(0.5);
 
 % beta is the slope of a Weibull function. This parameter has been
