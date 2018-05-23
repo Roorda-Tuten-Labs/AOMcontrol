@@ -1,6 +1,6 @@
 function createRandomStimulus(trialIntensity, stimsize)
     
-    if isdir(fullfile(pwd, 'tempStimulus')) == 0;
+    if isdir(fullfile(pwd, 'tempStimulus')) == 0
         mkdir(fullfile(pwd, 'tempStimulus'));
         cd(fullfile(pwd, 'tempStimulus'));
     else
