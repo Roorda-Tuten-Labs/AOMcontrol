@@ -56,8 +56,10 @@ function createStimulus(stimsize, stimshape, intensities, extension)
         mkdir(fullfile(pwd, 'tempStimulus'));
     end
     
-    % make a blank (zero value) stimulus
-    blank_im = zeros(10, 10);
+    % make a blank (zero value) stimulus that is at least as large as the
+    % stimulus.
+    blank_im = stim.create_IR_stim(stim_im);
+    
     % write to file        
     if strcmpi(extension, 'bmp')
         imwrite(blank_im, fullfile(stimdir, 'frame2.bmp'));
@@ -66,13 +68,13 @@ function createStimulus(stimsize, stimshape, intensities, extension)
             'frame')
     end    
     
-    %Make cross in IR channel to record stimulus location
-    ir_im = stim.create_cross_img(21, 5, true);    
+    % Make cross to record stimulus location
+    cross_im = stim.create_cross_img(21, 5, true);    
     % write to file        
     if strcmpi(extension, 'bmp')
-        imwrite(ir_im, fullfile(stimdir, 'frame3.bmp'));
+        imwrite(cross_im, fullfile(stimdir, 'frame3.bmp'));
     elseif strcmpi(extension, 'buf')
-        stim.write_to_buf_file(ir_im, '3', stimdir, ...
+        stim.write_to_buf_file(cross_im, '3', stimdir, ...
             'frame')
     end                    
 
