@@ -1,7 +1,12 @@
 function view_img()
+% View image files (bmp or buf) in a matlab figure window.
 %
 % USAGE
-% view_stim_img(im_path)
+% stim.view_img()
+%
+% OUTPUT
+% A separate figure will display each selected image file.
+%
 
 if nargin < 1
     [im_files, path] = uigetfile({'*', 'All files (*)';...
