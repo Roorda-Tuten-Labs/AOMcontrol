@@ -14,7 +14,9 @@ if nargin < 1
         '*.bmp', 'bmp files (*.bmp)'}, ...
         'Select image(s) to view', 'MultiSelect', 'on');
 end
-
+if ~iscell(im_files)
+    im_files = {im_files};
+end
 for f = 1:length(im_files)
     
     filename = fullfile(path, im_files{f});
