@@ -39,15 +39,21 @@ if SYSPARAMS.sysmode == 2 || SYSPARAMS.sysmode == 3
             Mov.aom0pow(Mov.duration) = str2double(chopped(commapos(1)+1:commapos(2)-1));
             Mov.aom0locx(Mov.duration) = str2num(chopped(commapos(2)+1:commapos(3)-1)); %#ok<ST2NM>
             Mov.aom0locy(Mov.duration) = str2num(chopped(commapos(3)+1:commapos(4)-1));
-            Mov.aom1seq(Mov.duration) = str2num(chopped(commapos(4)+1:commapos(5)-1));
-            Mov.aom1pow(Mov.duration) = str2double(chopped(commapos(5)+1:commapos(6)-1));
-            Mov.aom1offx(Mov.duration) = str2num(chopped(commapos(6)+1:commapos(7)-1));
-            Mov.aom1offy(Mov.duration) = str2num(chopped(commapos(7)+1:commapos(8)-1));
-            Mov.aom2seq(Mov.duration) = str2num(chopped(commapos(8)+1:commapos(9)-1));
-            Mov.aom1pow(Mov.duration) = str2double(chopped(commapos(9)+1:commapos(10)-1));
-            Mov.aom1offx(Mov.duration) = str2num(chopped(commapos(10)+1:commapos(11)-1));
-            Mov.aom1offy(Mov.duration) = str2num(chopped(commapos(11)+1:commapos(12)-1));
-            pos = 12;
+            Mov.aom0gain(Mov.duration) = str2double(chopped(commapos(4)+1:commapos(5)-1));
+            Mov.aom0angle(Mov.duration) = str2num(chopped(commapos(5)+1:commapos(6)-1));
+            Mov.aom1seq(Mov.duration) = str2num(chopped(commapos(6)+1:commapos(7)-1));
+            Mov.aom1pow(Mov.duration) = str2double(chopped(commapos(7)+1:commapos(8)-1));
+            Mov.aom1offx(Mov.duration) = str2num(chopped(commapos(8)+1:commapos(9)-1));
+            Mov.aom1offy(Mov.duration) = str2num(chopped(commapos(9)+1:commapos(10)-1));
+            Mov.aom1gain(Mov.duration) = str2double(chopped(commapos(10)+1:commapos(11)-1));
+            Mov.aom1angle(Mov.duration) = str2num(chopped(commapos(11)+1:commapos(12)-1));
+            Mov.aom2seq(Mov.duration) = str2num(chopped(commapos(12)+1:commapos(13)-1));
+            Mov.aom2pow(Mov.duration) = str2double(chopped(commapos(13)+1:commapos(14)-1));
+            Mov.aom2offx(Mov.duration) = str2num(chopped(commapos(14)+1:commapos(15)-1));
+            Mov.aom2offy(Mov.duration) = str2num(chopped(commapos(15)+1:commapos(16)-1));
+            Mov.aom2gain(Mov.duration) = str2double(chopped(commapos(16)+1:commapos(17)-1));
+            Mov.aom2angle(Mov.duration) = str2num(chopped(commapos(17)+1:commapos(18)-1));
+            pos = 18;
             if SYSPARAMS.aoms_enable(4) == 1
                 Mov.aom3seq(Mov.duration) = str2num(chopped(commapos(pos)+1:commapos(pos+1)-1));
                 pos = pos+1;
@@ -57,11 +63,11 @@ if SYSPARAMS.sysmode == 2 || SYSPARAMS.sysmode == 3
                 pos = pos+1;
                 Mov.aom3offy(Mov.duration) = str2num(chopped(commapos(pos)+1:commapos(pos+1)-1));
                 pos = pos+1;
+                Mov.aom3gain(Mov.duration) = str2double(chopped(commapos(pos)+1:commapos(pos+1)-1));
+                pos = pos+1;
+                Mov.aom3angle(Mov.duration) = str2num(chopped(commapos(pos)+1:commapos(pos+1)-1));
+                pos = pos+1;
             end
-            Mov.gainseq(Mov.duration) = str2double(chopped(commapos(pos)+1:commapos(pos+1)-1));
-            pos = pos+1;
-            Mov.angleseq(Mov.duration) = str2num(chopped(commapos(pos)+1:commapos(pos+1)-1));
-            pos = pos+1;
             Mov.stimbeep(Mov.duration) = str2num(chopped(commapos(pos)+1:end));            
         end
     elseif SYSPARAMS.sysmode == 2
@@ -69,21 +75,39 @@ if SYSPARAMS.sysmode == 2 || SYSPARAMS.sysmode == 3
     end
 end
 if SYSPARAMS.sysmode == 3 && SYSPARAMS.realsystem == 1%Experiment
+    if isfield(Mov, 'gainseq') % using old syntax, make the structure ocmpatible with the new syntax before proceeding
+        Mov.aom0gain = Mov.gainseq;
+        Mov.aom0angle = Mov.angleseq;
+        Mov.aom1gain = Mov.aom0gain;        
+        Mov.aom1angle = Mov.aom0angle;
+        Mov.aom2gain = Mov.aom0gain;
+        Mov.aom2angle = Mov.aom0angle;
+    end
+    if ~isfield(Mov, 'aom1seq')
+        Mov.aom1seq = zeros(size(Mov.aom0seq));
+        Mov.aom1pow = zeros(size(Mov.aom0seq));
+        Mov.aom1offx = zeros(size(Mov.aom0seq));
+        Mov.aom1offy = zeros(size(Mov.aom0seq));
+        Mov.aom1gain = Mov.aom0gain;
+        Mov.aom1angle = Mov.aom0angle;
+    end
     if ~isfield(Mov, 'aom2seq')
         Mov.aom2seq = zeros(size(Mov.aom0seq));
         Mov.aom2pow = zeros(size(Mov.aom0seq));
         Mov.aom2offx = zeros(size(Mov.aom0seq));
         Mov.aom2offy = zeros(size(Mov.aom0seq));
+        Mov.aom2gain = Mov.aom0gain;
+        Mov.aom2angle = Mov.aom0angle;
     end
     if Mov.duration > 0
         if SYSPARAMS.aoms_enable(4) ~= 1
             for i = 1:Mov.duration
                 if i == 1
-                    Mov.seq = [num2str(Mov.aom0seq(i)) ',' num2str(Mov.aom0pow(i)) ',' num2str(Mov.aom0locx(i)) ',' num2str(Mov.aom0locy(i)) ',' num2str(Mov.aom1seq(i)) ',' num2str(Mov.aom1pow(i)) ',' num2str(Mov.aom1offx(i)) ',' num2str(Mov.aom1offy(i)) ',' num2str(Mov.aom2seq(i)) ',' num2str(Mov.aom2pow(i)) ',' num2str(Mov.aom2offx(i)) ',' num2str(Mov.aom2offy(i)) ',' num2str(Mov.gainseq(i)) ','  num2str(Mov.angleseq(i)) ','  num2str(Mov.stimbeep(i)) sprintf('\t')];
+                    Mov.seq = [num2str(Mov.aom0seq(i)) ',' num2str(Mov.aom0pow(i)) ',' num2str(Mov.aom0locx(i)) ',' num2str(Mov.aom0locy(i)) ',' num2str(Mov.aom0gain(i)) ',' num2str(Mov.aom0angle(i)) ',' num2str(Mov.aom1seq(i)) ',' num2str(Mov.aom1pow(i)) ',' num2str(Mov.aom1offx(i)) ',' num2str(Mov.aom1offy(i)) ',' num2str(Mov.aom1gain(i)) ',' num2str(Mov.aom1angle(i)) ',' num2str(Mov.aom2seq(i)) ',' num2str(Mov.aom2pow(i)) ',' num2str(Mov.aom2offx(i)) ',' num2str(Mov.aom2offy(i)) ',' num2str(Mov.aom2gain(i)) ',' num2str(Mov.aom2angle(i)) ',' num2str(Mov.stimbeep(i)) sprintf('\t')];
                 elseif i>1 && i<length(Mov.aom0seq)
-                    Mov.seq = [Mov.seq num2str(Mov.aom0seq(i)) ',' num2str(Mov.aom0pow(i)) ',' num2str(Mov.aom0locx(i)) ',' num2str(Mov.aom0locy(i)) ',' num2str(Mov.aom1seq(i)) ',' num2str(Mov.aom1pow(i)) ',' num2str(Mov.aom1offx(i)) ',' num2str(Mov.aom1offy(i)) ',' num2str(Mov.aom2seq(i)) ',' num2str(Mov.aom2pow(i)) ',' num2str(Mov.aom2offx(i)) ',' num2str(Mov.aom2offy(i)) ',' num2str(Mov.gainseq(i)) ','  num2str(Mov.angleseq(i)) ','  num2str(Mov.stimbeep(i)) sprintf('\t')]; %#ok<AGROW>
+                    Mov.seq = [Mov.seq num2str(Mov.aom0seq(i)) ',' num2str(Mov.aom0pow(i)) ',' num2str(Mov.aom0locx(i)) ',' num2str(Mov.aom0locy(i)) ',' num2str(Mov.aom0gain(i)) ',' num2str(Mov.aom0angle(i)) ',' num2str(Mov.aom1seq(i)) ',' num2str(Mov.aom1pow(i)) ',' num2str(Mov.aom1offx(i)) ',' num2str(Mov.aom1offy(i)) ',' num2str(Mov.aom1gain(i)) ',' num2str(Mov.aom1angle(i)) ',' num2str(Mov.aom2seq(i)) ',' num2str(Mov.aom2pow(i)) ',' num2str(Mov.aom2offx(i)) ',' num2str(Mov.aom2offy(i)) ',' num2str(Mov.aom2gain(i)) ',' num2str(Mov.aom2angle(i)) ',' num2str(Mov.stimbeep(i)) sprintf('\t')]; %#ok<AGROW>
                 elseif i == length(Mov.aom0seq)
-                    Mov.seq = [Mov.seq num2str(Mov.aom0seq(i)) ',' num2str(Mov.aom0pow(i)) ',' num2str(Mov.aom0locx(i)) ',' num2str(Mov.aom0locy(i)) ',' num2str(Mov.aom1seq(i)) ',' num2str(Mov.aom1pow(i)) ',' num2str(Mov.aom1offx(i)) ',' num2str(Mov.aom1offy(i)) ',' num2str(Mov.aom2seq(i)) ',' num2str(Mov.aom2pow(i)) ',' num2str(Mov.aom2offx(i)) ',' num2str(Mov.aom2offy(i)) ',' num2str(Mov.gainseq(i)) ','  num2str(Mov.angleseq(i)) ','  num2str(Mov.stimbeep(i))]; %#ok<AGROW>
+                    Mov.seq = [Mov.seq num2str(Mov.aom0seq(i)) ',' num2str(Mov.aom0pow(i)) ',' num2str(Mov.aom0locx(i)) ',' num2str(Mov.aom0locy(i)) ',' num2str(Mov.aom0gain(i)) ',' num2str(Mov.aom0angle(i)) ',' num2str(Mov.aom1seq(i)) ',' num2str(Mov.aom1pow(i)) ',' num2str(Mov.aom1offx(i)) ',' num2str(Mov.aom1offy(i)) ',' num2str(Mov.aom1gain(i)) ',' num2str(Mov.aom1angle(i)) ',' num2str(Mov.aom2seq(i)) ',' num2str(Mov.aom2pow(i)) ',' num2str(Mov.aom2offx(i)) ',' num2str(Mov.aom2offy(i)) ',' num2str(Mov.aom2gain(i)) ',' num2str(Mov.aom2angle(i)) ',' num2str(Mov.stimbeep(i))]; %#ok<AGROW>
                 end
             end
         else
@@ -104,65 +128,49 @@ end
 
 if SYSPARAMS.sysmode == 2 || SYSPARAMS.sysmode == 3
     if SYSPARAMS.realsystem == 1
-        if SYSPARAMS.sysmode == 2 || SYSPARAMS.sysmode == 3 % NMP 8/11/14 add  || SYSPARAMS.sysmode == 3
+        if SYSPARAMS.sysmode == 2 || SYSPARAMS.sysmode == 3
             command = ['Loop#' num2str(SYSPARAMS.loop) '#'];
-            if SYSPARAMS.board == 'm'
-                MATLABAomControl32(command);
-            else
-                netcomm('write',SYSPARAMS.netcommobj,int8(command));
-            end
-        end
-        command = ['Sequence' '#' char(Mov.seq) '#']; %#ok<NASGU>
-        if SYSPARAMS.board == 'm'
-            MATLABAomControl32(command);
-        else
-            aom0seq = Mov.aom0seq;
-            aom0pow = Mov.aom0pow;
-            aom0locx = Mov.aom0locx;
-            aom0locy = Mov.aom0locy;
-            aom1seq = Mov.aom1seq;
-            aom1pow = Mov.aom1pow;
-            if SYSPARAMS.PupilTCACorrection==1, % aeb 11/30/16
-                aom1offx = Mov.aom1offx + PupilOffsetpix_x;   %%cmp
-                aom1offy = Mov.aom1offy + PupilOffsetpix_y;   %%cmp
-            else
-                aom1offx = Mov.aom1offx;   %%cmp
-                aom1offy = Mov.aom1offy;   %%cmp
-            end
-            aom2seq = Mov.aom2seq;
-            aom2pow = Mov.aom2pow;
-            aom2offx = Mov.aom2offx;
-            aom2offy = Mov.aom2offy;
-            gainseq = Mov.gainseq;
-            angleseq = Mov.angleseq;
-            stimbeep = Mov.stimbeep;
-            save G:\Seqfile aom0seq aom0pow aom0locx aom0locy aom1seq aom1pow aom1offx aom1offy aom2seq aom2pow aom2offx aom2offy gainseq angleseq stimbeep;
-            command = ['Sequence' '#' num2str(size(Mov.aom0seq,2)) '#']; %#ok<NASGU>
             netcomm('write',SYSPARAMS.netcommobj,int8(command));
         end
+        command = ['Sequence' '#' char(Mov.seq) '#']; %#ok<NASGU>
+        aom0seq = Mov.aom0seq;
+        aom0pow = Mov.aom0pow;
+        aom0locx = Mov.aom0locx;
+        aom0locy = Mov.aom0locy;
+        aom0gain = Mov.aom0gain;
+        aom0angle = Mov.aom0angle;
+        aom1seq = Mov.aom1seq;
+        aom1pow = Mov.aom1pow;
+        if SYSPARAMS.PupilTCACorrection==1, % aeb 11/30/16
+            aom1offx = Mov.aom1offx + PupilOffsetpix_x;   %%cmp
+            aom1offy = Mov.aom1offy + PupilOffsetpix_y;   %%cmp
+        else
+            aom1offx = Mov.aom1offx;   %%cmp
+            aom1offy = Mov.aom1offy;   %%cmp
+        end
+        aom1gain = Mov.aom1gain;
+        aom1angle = Mov.aom1angle;
+        aom2seq = Mov.aom2seq;
+        aom2pow = Mov.aom2pow;
+        aom2offx = Mov.aom2offx;
+        aom2offy = Mov.aom2offy;
+        aom2gain = Mov.aom2gain;
+        aom2angle = Mov.aom2angle;
+        stimbeep = Mov.stimbeep;
+        save G:\Seqfile aom0seq aom0pow aom0locx aom0locy aom0gain aom0angle aom1seq aom1pow aom1offx aom1offy aom1gain aom1angle aom2seq aom2pow aom2offx aom2offy aom2gain aom2angle stimbeep;
+        command = ['Sequence' '#' num2str(size(Mov.aom0seq,2)) '#']; %#ok<NASGU>
+        netcomm('write',SYSPARAMS.netcommobj,int8(command));
         pause(size(Mov.seq,2)*0.0001);
         if get(handles.exp_radio1, 'Value') == 1 && VideoParams.vidrecord == 1
             %if running an experiment, this is where the video capturing gets
             %triggered
             command = ['VL#' sprintf('%2.2f',VideoParams.videodur) '#']; %#ok<NASGU>
-            if SYSPARAMS.board == 'm'
-                MATLABAomControl32(command);
-            else
-                netcomm('write',SYSPARAMS.netcommobj,int8(command));
-            end
+            netcomm('write',SYSPARAMS.netcommobj,int8(command));
             command = ['GRVIDT#' VideoParams.vidname '#']; %#ok<NASGU>
-            if SYSPARAMS.board == 'm'
-                MATLABAomControl32(command);
-            else
-                netcomm('write',SYSPARAMS.netcommobj,int8(command));
-            end
+            netcomm('write',SYSPARAMS.netcommobj,int8(command));
         else
             %if not running experiment, just play the movie
-            if SYSPARAMS.board == 'm'
-                MATLABAomControl32('Trigger#');
-            else
-                netcomm('write',SYSPARAMS.netcommobj,int8('Trigger#'));
-            end
+            netcomm('write',SYSPARAMS.netcommobj,int8('Trigger#'));
         end
     end
 elseif SYSPARAMS.sysmode == 1 %AVI
@@ -268,7 +276,7 @@ else
                 end
                 temp_im_d = ((temp_im_d-min(min(temp_im_d)))*((255-51)/((max(max(temp_im_d))-min(min(temp_im_d)))+1)));
                 temp_im_dim = size(temp_im_d);
-                CurFrame(floor(256+locy+StimParams.aomoffs(1,2)+Mov.aom1offy(Mov.frm)-temp_im_dim(1)/2)+1:floor(256+locy+StimParams.aomoffs(1,2)+Mov.aom1offy(Mov.frm)-temp_im_dim(1)/2)+temp_im_dim(1),floor(256+locx+StimParams.aomoffs(1,1)+Mov.aom1offx(Mov.frm)-temp_im_dim(2)/2)+1:floor(256+locx+StimParams.aomoffs(1,1)+Mov.aom1offx(Mov.frm)-temp_im_dim(2)/2)+temp_im_dim(2),1) = uint8(temp_im_d)+CurFrame(floor(256-temp_im_dim(1)/2)+1:floor(256-temp_im_dim(1)/2)+temp_im_dim(1),floor(256-temp_im_dim(2)/2)+1:floor(256-temp_im_dim(2)/2)+temp_im_dim(2),1);
+                CurFrame(floor(256+locy+StimParams.aomTCA(1,2)+Mov.aom1offy(Mov.frm)-temp_im_dim(1)/2)+1:floor(256+locy+StimParams.aomTCA(1,2)+Mov.aom1offy(Mov.frm)-temp_im_dim(1)/2)+temp_im_dim(1),floor(256+locx+StimParams.aomTCA(1,1)+Mov.aom1offx(Mov.frm)-temp_im_dim(2)/2)+1:floor(256+locx+StimParams.aomTCA(1,1)+Mov.aom1offx(Mov.frm)-temp_im_dim(2)/2)+temp_im_dim(2),1) = uint8(temp_im_d)+CurFrame(floor(256-temp_im_dim(1)/2)+1:floor(256-temp_im_dim(1)/2)+temp_im_dim(1),floor(256-temp_im_dim(2)/2)+1:floor(256-temp_im_dim(2)/2)+temp_im_dim(2),1);
                 update = 1;
             end
         elseif (Mov.aom1seq(Mov.frm) == 0 && Mov.aom1seq(Mov.frm-1) ~= 0) || (Mov.aom1seq(Mov.frm) == 1 && Mov.aom1seq(Mov.frm-1) ~= 1)
@@ -288,7 +296,7 @@ else
                     temp_im_d = double(aviframe_d(:,:,2)).*SYSPARAMS.aompowerLvl(3);
                 end
                 temp_im_dim = size(temp_im_d);
-                CurFrame(floor(256+locy+StimParams.aomoffs(2,2)+Mov.aom2offy(Mov.frm)-temp_im_dim(1)/2)+1:floor(256+locy+StimParams.aomoffs(2,2)+Mov.aom2offy(Mov.frm)-temp_im_dim(1)/2)+temp_im_dim(1),floor(256+locx+StimParams.aomoffs(2,1)+Mov.aom2offx(Mov.frm)-temp_im_dim(2)/2)+1:floor(256+locx+StimParams.aomoffs(2,1)+Mov.aom2offx(Mov.frm)-temp_im_dim(2)/2)+temp_im_dim(2),2) = uint8(temp_im_d);
+                CurFrame(floor(256+locy+StimParams.aomTCA(2,2)+Mov.aom2offy(Mov.frm)-temp_im_dim(1)/2)+1:floor(256+locy+StimParams.aomTCA(2,2)+Mov.aom2offy(Mov.frm)-temp_im_dim(1)/2)+temp_im_dim(1),floor(256+locx+StimParams.aomTCA(2,1)+Mov.aom2offx(Mov.frm)-temp_im_dim(2)/2)+1:floor(256+locx+StimParams.aomTCA(2,1)+Mov.aom2offx(Mov.frm)-temp_im_dim(2)/2)+temp_im_dim(2),2) = uint8(temp_im_d);
                 update = 1;
             end
         elseif (Mov.aom2seq(Mov.frm) == 0 && Mov.aom2seq(Mov.frm-1) ~= 0) || (Mov.aom2seq(Mov.frm) == 1 && Mov.aom2seq(Mov.frm-1) ~= 1)
@@ -313,7 +321,7 @@ else
                     temp_im_d = double(aviframe_d(:,:,3)).*SYSPARAMS.aompowerLvl(3);
                 end
                 temp_im_dim = size(temp_im_d);
-                CurFrame(floor(256+locy+StimParams.aomoffs(3,2)+Mov.aom2offy(Mov.frm)-temp_im_dim(1)/2)+1:floor(256+locy+StimParams.aomoffs(3,2)+Mov.aom2offy(Mov.frm)-temp_im_dim(1)/2)+temp_im_dim(1),floor(256+locx+StimParams.aomoffs(3,1)+Mov.aom2offx(Mov.frm)-temp_im_dim(2)/2)+1:floor(256+locx+StimParams.aomoffs(3,1)+Mov.aom2offx(Mov.frm)-temp_im_dim(2)/2)+temp_im_dim(2),3) = uint8(temp_im_d);
+                CurFrame(floor(256+locy+StimParams.aomTCA(3,2)+Mov.aom2offy(Mov.frm)-temp_im_dim(1)/2)+1:floor(256+locy+StimParams.aomTCA(3,2)+Mov.aom2offy(Mov.frm)-temp_im_dim(1)/2)+temp_im_dim(1),floor(256+locx+StimParams.aomTCA(3,1)+Mov.aom2offx(Mov.frm)-temp_im_dim(2)/2)+1:floor(256+locx+StimParams.aomTCA(3,1)+Mov.aom2offx(Mov.frm)-temp_im_dim(2)/2)+temp_im_dim(2),3) = uint8(temp_im_d);
                 update = 1;
             end
         elseif (Mov.aom3seq(Mov.frm) == 0 && Mov.aom3seq(Mov.frm-1) ~= 0) || (Mov.aom3seq(Mov.frm) == 1 && Mov.aom3seq(Mov.frm-1) ~= 1)
@@ -401,11 +409,11 @@ if SYSPARAMS.aoms_state(2) == 1
                 temp_im_d))-min(min(temp_im_d)))+1)));
             
             temp_im_dim = size(temp_im_d);
-            CurFrame(floor(256+locy+StimParams.aomoffs(1,2)+Mov.aom1offy(end)-...
-                temp_im_dim(1)/2)+1:floor(256+locy+StimParams.aomoffs(1,2)+...
+            CurFrame(floor(256+locy+StimParams.aomTCA(1,2)+Mov.aom1offy(end)-...
+                temp_im_dim(1)/2)+1:floor(256+locy+StimParams.aomTCA(1,2)+...
                 Mov.aom1offy(end)-temp_im_dim(1)/2)+temp_im_dim(1),...
-                floor(256+locx+StimParams.aomoffs(1,1)+Mov.aom1offx(end)-...
-                temp_im_dim(2)/2)+1:floor(256+locx+StimParams.aomoffs(1,1)+...
+                floor(256+locx+StimParams.aomTCA(1,1)+Mov.aom1offx(end)-...
+                temp_im_dim(2)/2)+1:floor(256+locx+StimParams.aomTCA(1,1)+...
                 Mov.aom1offx(end)-temp_im_dim(2)/2)+temp_im_dim(2),1) = CurFrame(...
                 floor(256+locy+Mov.aom1offy(end)-temp_im_dim(1)/2)+1:floor(...
                 256+locy+Mov.aom1offy(end)-temp_im_dim(1)/2)+temp_im_dim(1),...
@@ -430,7 +438,7 @@ if SYSPARAMS.aoms_state(3) == 1 && SYSPARAMS.aoms_enable(3) == 1
                 temp_im_d = double(aviframe_d(:,:,2)).*SYSPARAMS.aompowerLvl(3);
             end
             temp_im_dim = size(temp_im_d);
-            CurFrame(floor(256+locy+StimParams.aomoffs(2,2)+Mov.aom2offy(end)-temp_im_dim(1)/2)+1:floor(256+locy+StimParams.aomoffs(2,2)+Mov.aom2offy(end)-temp_im_dim(1)/2)+temp_im_dim(1),floor(256+locx+StimParams.aomoffs(2,1)+Mov.aom2offx(end)-temp_im_dim(2)/2)+1:floor(256+locx+StimParams.aomoffs(2,1)+Mov.aom2offx(end)-temp_im_dim(2)/2)+temp_im_dim(2),2) = uint8(temp_im_d);
+            CurFrame(floor(256+locy+StimParams.aomTCA(2,2)+Mov.aom2offy(end)-temp_im_dim(1)/2)+1:floor(256+locy+StimParams.aomTCA(2,2)+Mov.aom2offy(end)-temp_im_dim(1)/2)+temp_im_dim(1),floor(256+locx+StimParams.aomTCA(2,1)+Mov.aom2offx(end)-temp_im_dim(2)/2)+1:floor(256+locx+StimParams.aomTCA(2,1)+Mov.aom2offx(end)-temp_im_dim(2)/2)+temp_im_dim(2),2) = uint8(temp_im_d);
             update = 1;
         end
     elseif Mov.aom2seq(end) == 0 && Mov.aom2seq(end-1) ~= 0
@@ -451,7 +459,7 @@ if SYSPARAMS.aoms_state(4) == 1 && SYSPARAMS.aoms_enable(4) == 1
                 temp_im_d = double(aviframe_d(:,:,3)).*SYSPARAMS.aompowerLvl(4);
             end
             temp_im_dim = size(temp_im_d);
-            CurFrame(floor(256+locy+StimParams.aomoffs(3,2)+Mov.aom2offy(end)-temp_im_dim(1)/2)+1:floor(256+locy+StimParams.aomoffs(3,2)+Mov.aom2offy(end)-temp_im_dim(1)/2)+temp_im_dim(1),floor(256+locx+StimParams.aomoffs(3,1)+Mov.aom2offx(end)-temp_im_dim(2)/2)+1:floor(256+locx+StimParams.aomoffs(3,1)+Mov.aom2offx(end)-temp_im_dim(2)/2)+temp_im_dim(2),3) = uint8(temp_im_d);
+            CurFrame(floor(256+locy+StimParams.aomTCA(3,2)+Mov.aom2offy(end)-temp_im_dim(1)/2)+1:floor(256+locy+StimParams.aomTCA(3,2)+Mov.aom2offy(end)-temp_im_dim(1)/2)+temp_im_dim(1),floor(256+locx+StimParams.aomTCA(3,1)+Mov.aom2offx(end)-temp_im_dim(2)/2)+1:floor(256+locx+StimParams.aomTCA(3,1)+Mov.aom2offx(end)-temp_im_dim(2)/2)+temp_im_dim(2),3) = uint8(temp_im_d);
             update = 1;
         end
     elseif Mov.aom3seq(end) == 0 && Mov.aom3seq(end-1) ~= 0
@@ -541,7 +549,7 @@ if SYSPARAMS.aoms_state(2) == 1
         end
         temp_im_d = ((temp_im_d-min(min(temp_im_d)))*((255-51)/((max(max(temp_im_d))-min(min(temp_im_d)))+1)));
         temp_im_dim = size(temp_im_d);
-        CurFrame(floor(256+locy+StimParams.aomoffs(1,2)+Mov.aom1offy(1)-temp_im_dim(1)/2)+1:floor(256+locy+StimParams.aomoffs(1,2)+Mov.aom1offy(1)-temp_im_dim(1)/2)+temp_im_dim(1),floor(256+locx+StimParams.aomoffs(1,1)+Mov.aom1offx(1)-temp_im_dim(2)/2)+1:floor(256+locx+StimParams.aomoffs(1,1)+Mov.aom1offx(1)-temp_im_dim(2)/2)+temp_im_dim(2),1) = CurFrame(floor(256+locy+Mov.aom1offy(1)-temp_im_dim(1)/2)+1:floor(256+locy+Mov.aom1offy(1)-temp_im_dim(1)/2)+temp_im_dim(1),floor(256+locx+Mov.aom1offy(1)-temp_im_dim(2)/2)+1:floor(256+locx+Mov.aom1offx(1)-temp_im_dim(2)/2)+temp_im_dim(2),1)+uint8(temp_im_d);
+        CurFrame(floor(256+locy+StimParams.aomTCA(1,2)+Mov.aom1offy(1)-temp_im_dim(1)/2)+1:floor(256+locy+StimParams.aomTCA(1,2)+Mov.aom1offy(1)-temp_im_dim(1)/2)+temp_im_dim(1),floor(256+locx+StimParams.aomTCA(1,1)+Mov.aom1offx(1)-temp_im_dim(2)/2)+1:floor(256+locx+StimParams.aomTCA(1,1)+Mov.aom1offx(1)-temp_im_dim(2)/2)+temp_im_dim(2),1) = CurFrame(floor(256+locy+Mov.aom1offy(1)-temp_im_dim(1)/2)+1:floor(256+locy+Mov.aom1offy(1)-temp_im_dim(1)/2)+temp_im_dim(1),floor(256+locx+Mov.aom1offx(1)-temp_im_dim(2)/2)+1:floor(256+locx+Mov.aom1offx(1)-temp_im_dim(2)/2)+temp_im_dim(2),1)+uint8(temp_im_d);
     end
 end
 
@@ -556,7 +564,7 @@ if SYSPARAMS.aoms_state(3) == 1 && SYSPARAMS.aoms_enable(3) == 1
             temp_im_d = double(aviframe_d(:,:,2)).*SYSPARAMS.aompowerLvl(3);
         end
         temp_im_dim = size(temp_im_d);
-        CurFrame(floor(256+locy+StimParams.aomoffs(2,2)+Mov.aom2offy(1)-temp_im_dim(1)/2)+1:floor(256+locy+StimParams.aomoffs(2,2)+Mov.aom2offy(1)-temp_im_dim(1)/2)+temp_im_dim(1),floor(256+locx+StimParams.aomoffs(2,1)+Mov.aom2offx(1)-temp_im_dim(2)/2)+1:floor(256+locx+StimParams.aomoffs(2,1)+Mov.aom2offx(1)-temp_im_dim(2)/2)+temp_im_dim(2),2) = uint8(temp_im_d);
+        CurFrame(floor(256+locy+StimParams.aomTCA(2,2)+Mov.aom2offy(1)-temp_im_dim(1)/2)+1:floor(256+locy+StimParams.aomTCA(2,2)+Mov.aom2offy(1)-temp_im_dim(1)/2)+temp_im_dim(1),floor(256+locx+StimParams.aomTCA(2,1)+Mov.aom2offx(1)-temp_im_dim(2)/2)+1:floor(256+locx+StimParams.aomTCA(2,1)+Mov.aom2offx(1)-temp_im_dim(2)/2)+temp_im_dim(2),2) = uint8(temp_im_d);
     end
 end
 
@@ -571,7 +579,7 @@ if SYSPARAMS.aoms_state(4) == 1 && SYSPARAMS.aoms_enable(4) == 1
             temp_im_d = double(aviframe_d(:,:,3)).*SYSPARAMS.aompowerLvl(4);
         end
         temp_im_dim = size(temp_im_d);
-        CurFrame(floor(256+locy+StimParams.aomoffs(3,2)+Mov.aom2offy(1)-temp_im_dim(1)/2)+1:floor(256+locy+StimParams.aomoffs(3,2)+Mov.aom2offy(1)-temp_im_dim(1)/2)+temp_im_dim(1),floor(256+locx+StimParams.aomoffs(3,1)+Mov.aom2offx(1)-temp_im_dim(2)/2)+1:floor(256+locx+StimParams.aomoffs(3,1)+Mov.aom2offx(1)-temp_im_dim(2)/2)+temp_im_dim(2),3) = uint8(temp_im_d);
+        CurFrame(floor(256+locy+StimParams.aomTCA(3,2)+Mov.aom2offy(1)-temp_im_dim(1)/2)+1:floor(256+locy+StimParams.aomTCA(3,2)+Mov.aom2offy(1)-temp_im_dim(1)/2)+temp_im_dim(1),floor(256+locx+StimParams.aomTCA(3,1)+Mov.aom2offx(1)-temp_im_dim(2)/2)+1:floor(256+locx+StimParams.aomTCA(3,1)+Mov.aom2offx(1)-temp_im_dim(2)/2)+temp_im_dim(2),3) = uint8(temp_im_d);
     end
 end
 
