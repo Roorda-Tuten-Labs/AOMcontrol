@@ -94,14 +94,6 @@ else
     StimParams.filepath{4} = '-'; % Blue filename
 
 end
-% Over-ride so that aomoffs are always set to zero. They should not be
-% saved from experiment to experiment.
-StimParams.aomoffs(1,1) = 0; %Red OffsX
-StimParams.aomoffs(1,2) = 0; %Red OffsY
-StimParams.aomoffs(2,1) = 0; %Green OffsX
-StimParams.aomoffs(2,2) = 0; %Green OffsY
-StimParams.aomoffs(3,1) = 0; %Blue OffsX
-StimParams.aomoffs(3,2) = 0; %Blue OffsY   
 
 SYSPARAMS.PupilTracker=0;       %%cmp
 SYSPARAMS.PupilDuration=0;      %%cmp
@@ -156,14 +148,10 @@ elseif system == 4
     OrigFrame.ir = uint8(ones(SYSPARAMS.rasterH, SYSPARAMS.rasterV)*50);
     OrigFrame.red = uint8(zeros(SYSPARAMS.rasterH, SYSPARAMS.rasterV));
     OrigFrame.green = uint8(zeros(SYSPARAMS.rasterH, SYSPARAMS.rasterV));
-    set(handles.alignredh, 'Enable', 'On');    
-    set(handles.alignredh, 'Visible', 'On');  
-    set(handles.alignredv, 'Enable', 'On');    
-    set(handles.alignredv, 'Visible', 'On');  
-    set(handles.aligngrh, 'Enable', 'On');    
-    set(handles.aligngrh, 'Visible', 'On');  
-    set(handles.aligngrv, 'Enable', 'On');    
-    set(handles.aligngrv, 'Visible', 'On');      
+    set(handles.alignredh, 'Visible', 'Off');  
+    set(handles.alignredv, 'Visible', 'Off');  
+    set(handles.aligngrh, 'Visible', 'Off');  
+    set(handles.aligngrv, 'Visible', 'Off');      
 elseif system == 5 %virtual system with 4 channels for now
     if (init_load == 0)
         SYSPARAMS.rasterV = 512;
@@ -221,14 +209,10 @@ set(handles.ir_on_off, 'Value', SYSPARAMS.aoms_state(1));
 set(handles.red_on_off, 'Value', SYSPARAMS.aoms_state(2));
 set(handles.green_on_off, 'Value', SYSPARAMS.aoms_state(3));
 set(handles.blue_on_off, 'Value', SYSPARAMS.aoms_state(4));
-set(handles.alignment_panel,'Visible','On');
-set(handles.alignmentv_panel,'Visible','On');
+set(handles.alignment_panel,'Visible','Off');
+set(handles.alignmentv_panel,'Visible','Off');
 set(handles.alignh_slider,'SliderStep', [(1/64),(10/64)]);
 set(handles.alignv_slider,'SliderStep', [(1/32),(10/32)]);
-set(handles.alignh_slider, 'Value', 32-StimParams.aomoffs(1,2));
-set(handles.alignv_slider, 'Value', 16+StimParams.aomoffs(1,1));
-set(handles.alignh_val, 'String', num2str(StimParams.aomoffs(1,2)));
-set(handles.alignv_val, 'String', num2str(StimParams.aomoffs(1,1)));
 StimParams.wavfileplay = 0;
 [StimParams.wavfile, Fs] = audioread('breep.wav');
 button = questdlg('Are you running on AOSLO?','Select Application mode','Yes', 'No','Yes');
@@ -236,41 +220,23 @@ if button(1) == 'Y'
     SYSPARAMS.realsystem = 1; 
     VideoParams.vidrecord = 1;
 end
-if SYSPARAMS.realsystem == 1
-    button = 'FPGA';
-    if system == 2
-    button = questdlg('Which Imaging Board would you like to use?','Select Imaging Board','Matrox', 'FPGA','FPGA');
-    end
-    switch button,
-        case 'Matrox'
-            SYSPARAMS.board = 'm';
-            hAomControl = getappdata(0,'hAomControl');
-            MATLABAomControl32(['Mode#' num2str(system) '#']);
-            MATLABAomControl32('Start#1#');
-            MATLABAomControl32('ExtClockOn#');
-            set(handles.trackingen, 'Visible','On');
-            set(handles.flash_freq_panel, 'Visible','On');
-            set(handles.reset_button, 'Visible', 'On');
-            MATLABAomControl32(['AlignH#10#']);
-            command = ['UpdatePower#0#' num2str(SYSPARAMS.aompowerLvl(1)) '#'];
-            MATLABAomControl32(command);            
-        case 'FPGA'
-            SYSPARAMS.board = 'f';
-            h = msgbox('Make sure you have FPGA application running before initiating this mode', 'Warning', 'warn');
-            uiwait(h);
-            SYSPARAMS.netcommobj = netcomm('REQUEST', '127.0.0.1', 1300, 'timeout', 5000);                        
-            aligncommand = ['UpdateOffset#' num2str(StimParams.aomoffs(1, 1)) '#' num2str(StimParams.aomoffs(1, 2)) '#' num2str(StimParams.aomoffs(2, 1)) '#' num2str(StimParams.aomoffs(2, 2)) '#' num2str(StimParams.aomoffs(3, 1)) '#' num2str(StimParams.aomoffs(3, 2)) '#'];   %#ok<NASGU>
-            netcomm('write',SYSPARAMS.netcommobj,int8(aligncommand));
-            pause(0.1);
-            command = ['UpdatePower#0#' num2str(SYSPARAMS.aompowerLvl(1)) '#'];            
-            netcomm('write',SYSPARAMS.netcommobj,int8(command));
-            pause(0.1);
-            command = ['UpdatePower#1#' num2str(SYSPARAMS.aompowerLvl(2)) '#'];            
-            netcomm('write',SYSPARAMS.netcommobj,int8(command));
-            pause(0.1);
-            command = ['UpdatePower#2#' num2str(SYSPARAMS.aompowerLvl(3)) '#'];            
-            netcomm('write',SYSPARAMS.netcommobj,int8(command));
-    end
+if SYSPARAMS.realsystem == 1 
+    h = msgbox('Make sure you have FPGA application running before initiating this mode', 'Warning', 'warn');
+    uiwait(h);
+    SYSPARAMS.netcommobj = netcomm('REQUEST', '127.0.0.1', 1300, 'timeout', 5000);
+    aligncommand = ['UpdateTCA#' num2str(round(StimParams.aomTCA(1, 1))) '#' num2str(round(StimParams.aomTCA(1, 2))) '#' num2str(round(StimParams.aomTCA(2, 1))) '#' num2str(round(StimParams.aomTCA(2, 2))) '#' num2str(round(StimParams.aomTCA(3, 1))) '#' num2str(round(StimParams.aomTCA(3, 2))) '#'];   %#ok<NASGU>
+    netcomm('write',SYSPARAMS.netcommobj,int8(aligncommand));
+    pause(0.1);
+    netcomm('write',SYSPARAMS.netcommobj,int8('ApplyTCA#0#'));
+    pause(0.1);
+    command = ['UpdatePower#0#' num2str(SYSPARAMS.aompowerLvl(1)) '#'];
+    netcomm('write',SYSPARAMS.netcommobj,int8(command));
+    pause(0.1);
+    command = ['UpdatePower#1#' num2str(SYSPARAMS.aompowerLvl(2)) '#'];
+    netcomm('write',SYSPARAMS.netcommobj,int8(command));
+    pause(0.1);
+    command = ['UpdatePower#2#' num2str(SYSPARAMS.aompowerLvl(3)) '#'];
+    netcomm('write',SYSPARAMS.netcommobj,int8(command));
 end
 
 switch SYSPARAMS.aom_pow_sel
@@ -341,15 +307,9 @@ function menu_quit_Callback(hObject, eventdata, handles)  %#ok<DEFNU>
 global SYSPARAMS VideoParams StimParams; %#ok<NUSED>
 save('Initialization.mat', 'SYSPARAMS', 'VideoParams', 'StimParams');
 if SYSPARAMS.realsystem == 1
-    if SYSPARAMS.board == 'm'
-        MATLABAomControl32('Stop#');
-        pause(.05);
-        MATLABAomControl32('ExtClockOff#');
-    else
-        netcomm('close',SYSPARAMS.netcommobj);
-        rmappdata(0,'hAomControl');
-        clear all;
-    end
+    netcomm('close',SYSPARAMS.netcommobj);
+    rmappdata(0,'hAomControl');
+    clear all;
 else
     rmappdata(0,'hAomControl');
     clear all;
@@ -372,10 +332,6 @@ set(handles.play_button1, 'Enable', 'off');
 set(handles.display_button, 'Enable', 'on');
 set(handles.aom1_onoff, 'Enable', 'on');
 set(handles.loop_sequence, 'Visible', 'off');
-if SYSPARAMS.realsystem == 1 && SYSPARAMS.board == 'm'
-    set(handles.trackingen,'Visible','On');
-else %
-end
 list = getappdata(hAomControl, 'BufList');
 set(handles.bufferlist, 'Value', 1);
 set(handles.bufferlist, 'String', char(list{:,2}));
@@ -429,14 +385,8 @@ set(handles.aom1_onoff, 'Value', 1);
 exp_name = getappdata(getappdata(0,'hAomControl'),'exp');
 CFG = getappdata(getappdata(0,'hAomControl'),'CFG'); 
 if mmode(1) == 'P';
-    if SYSPARAMS.board == 'm' && SYSPARAMS.realsystem == 1
-        MATLABAomControl32('Generate#');
-    end
     PlayMovie;
 elseif mmode(1) == 'S';
-    if SYSPARAMS.board == 'm' && SYSPARAMS.realsystem == 1
-        MATLABAomControl32('Generate#');
-    end
     set(handles.play_button1, 'Enable', 'off');
     %set(handles.aom1_onoff, 'Enable', 'off');
     set(handles.display_button1, 'Enable', 'off');
@@ -451,14 +401,6 @@ function reset_button_Callback(hObject, eventdata, handles)  %#ok<DEFNU>
 global SYSPARAMS;
 set(handles.aom0_state, 'String','Resetting...');
 pause(.05);
-if SYSPARAMS.realsystem == 1 && SYSPARAMS.board == 'm'
-    MATLABAomControl32('Start#0#1#');
-    pause(0.5);
-    MATLABAomControl32('ExtClockOn#');
-    pause(0.05);
-    MATLABAomControl32('Stop#');
-    pause(0.05);
-end
 set(handles.alignh_slider, 'Enable', 'off');
 set(handles.aom1_state, 'String','Off');
 aom0_onoff_Callback;
@@ -726,26 +668,18 @@ fullpath = [StimParams.stimpath StimParams.fprefix '.' StimParams.fext];
 
     if ~strcmp(fext, 'avi') && SYSPARAMS.realsystem == 1 
         commandstring = ['Load#' num2str(AOMSel.clearbuf) '#' StimParams.stimpath '#' StimParams.fprefix '#0#0#' StimParams.fext '#']; %#ok<NASGU> 
-        if SYSPARAMS.board == 'm'
-            MATLABAomControl32(commandstring);
-        else
-            netcomm('write',SYSPARAMS.netcommobj,int8(commandstring));
-        end
+        netcomm('write',SYSPARAMS.netcommobj,int8(commandstring));
         switch AOMSel.loadbuf
             case 0
-                commandstring = ['Update#-1#' num2str(updatechan) '#' num2str(updatechan) '#' num2str(updatechan) '#']; % -1 loads the last buffer that has been loaded
+                commandstring = ['Update#-1#' num2str(updatechan) '#' num2str(updatechan) '#']; % -1 loads the last buffer that has been loaded
             case 1
-                commandstring = ['Update#' num2str(updatechanir) '#-1#' num2str(updatechan) '#' num2str(updatechan) '#']; % -1 loads the last buffer that has been loaded
+                commandstring = ['Update#' num2str(updatechanir) '#-1#' num2str(updatechan) '#']; % -1 loads the last buffer that has been loaded
             case 2
-                commandstring = ['Update#' num2str(updatechanir) '#' num2str(updatechan) '#-1#' num2str(updatechan) '#']; % -1 loads the last buffer that has been loaded
+                commandstring = ['Update#' num2str(updatechanir) '#' num2str(updatechan) '#-1#']; % -1 loads the last buffer that has been loaded
             case 3
                 commandstring = ['Update#' num2str(updatechanir) '#' num2str(updatechan) '#' num2str(updatechan) '#-1#']; % -1 loads the last buffer that has been loaded
         end
-        if SYSPARAMS.board == 'm'
-            MATLABAomControl32(commandstring);
-        else
-            netcomm('write',SYSPARAMS.netcommobj,int8(commandstring));
-        end
+        netcomm('write',SYSPARAMS.netcommobj,int8(commandstring));
     elseif strcmp(fext,'avi')
         OrigFrame.ir = 0;
         OrigFrame.red = 0;
@@ -760,11 +694,7 @@ fullpath = [StimParams.stimpath StimParams.fprefix '.' StimParams.fext];
             set(handles.loop_sequence,'Value', SYSPARAMS.loop);
             if (VideoParams.vidrecord==1) %send the prefix
                 commandstring = ['VP#' VideoParams.vidprefix '#']; %#ok<NASGU>
-                if SYSPARAMS.board == 'm'
-                    MATLABAomControl32(commandstring);
-                else
-                    netcomm('write',SYSPARAMS.netcommobj,int8(commandstring));
-                end
+                netcomm('write',SYSPARAMS.netcommobj,int8(commandstring));
             end
             %set video duration
             tempObj = mmreader(fullpath);
@@ -778,42 +708,22 @@ fullpath = [StimParams.stimpath StimParams.fprefix '.' StimParams.fext];
             if (VideoParams.vidrecord == 1)
                 VideoParams.videodur = duration/30;
                 commandstring = ['VL#' num2str(VideoParams.videodur+1) '#']; %#ok<NASGU>
-                if SYSPARAMS.board == 'm'
-                    MATLABAomControl32(commandstring);
-                else
-                    netcomm('write',SYSPARAMS.netcommobj,int8(commandstring));
-                end
+                netcomm('write',SYSPARAMS.netcommobj,int8(commandstring));
             end
             if (StimParams.avireplayinfinite == 0)
                 commandstring = ['LL#' num2str(duration) '#'];
             else
                 commandstring = 'LL#-1#';
             end
-            if SYSPARAMS.board == 'm'
-                MATLABAomControl32(commandstring);
-            else
-                netcomm('write',SYSPARAMS.netcommobj,int8(commandstring));
-            end
+            netcomm('write',SYSPARAMS.netcommobj,int8(commandstring));
             if (VideoParams.vidrecord == 1)
-                if SYSPARAMS.board == 'm'
-                    MATLABAomControl32('GRVIDT#-#');
-                else
-                    netcomm('write',SYSPARAMS.netcommobj,int8('GRVIDT#-#'));
-                end
+                netcomm('write',SYSPARAMS.netcommobj,int8('GRVIDT#-#'));
             else
                 %if not running experiment, just play the movie
-                if SYSPARAMS.board == 'm'
-                    MATLABAomControl32('Trigger#AVI#');
-                else
-                    netcomm('write',SYSPARAMS.netcommobj,int8('Trigger#AVI#'));
-                end
+                netcomm('write',SYSPARAMS.netcommobj,int8('Trigger#AVI#'));                
             end
             commandstring = ['Load#' num2str(AOMSel.clearbuf) '#' StimParams.stimpath '#' StimParams.fprefix '#0#0#' StimParams.fext '#']; %#ok<NASGU>
-            if SYSPARAMS.board == 'm'
-                MATLABAomControl32(commandstring);
-            else
-                netcomm('write',SYSPARAMS.netcommobj,int8(commandstring));
-            end
+            netcomm('write',SYSPARAMS.netcommobj,int8(commandstring));
         else
             StimParams.avireplayinfinite = 1;
         end
@@ -964,7 +874,7 @@ height = SYSPARAMS.rasterV;
 orientation = 90; %now hard-coded for horizontal gratings
 cycles = height/cycles; %this also is hard-coded for horizontal gratings
 
-if contrast>1 || contrast<0;
+if contrast>1 || contrast<0
     error('contrast must be a value between 0 and 1');
 else
 end
@@ -1186,12 +1096,8 @@ if button_state == get(handles.aom1_onoff,'Min')
         else
             aom3=-2;
         end
-        commandstring = ['Update#' num2str(aom0) '#' num2str(aom1) '#' num2str(aom2) '#' num2str(aom3) '#']; %#ok<NASGU>
-        if SYSPARAMS.board == 'm'
-            MATLABAomControl32(commandstring);
-        else
-            netcomm('write',SYSPARAMS.netcommobj,int8(commandstring));
-        end
+        commandstring = ['Update#' num2str(aom0) '#' num2str(aom1) '#' num2str(aom2) '#']; %#ok<NASGU>
+        netcomm('write',SYSPARAMS.netcommobj,int8(commandstring));
     end
     set(handles.aom1_state,'String','Off');
     a = imread('off.bmp');
@@ -1240,12 +1146,8 @@ else
         else
             aom3=-2;
         end
-        commandstring = ['Update#' num2str(aom0) '#' num2str(aom1) '#' num2str(aom2) '#' num2str(aom3) '#']; %#ok<NASGU>
-        if SYSPARAMS.board == 'm'
-            MATLABAomControl32(commandstring);
-        else
-            netcomm('write',SYSPARAMS.netcommobj,int8(commandstring));
-        end
+        commandstring = ['Update#' num2str(aom0) '#' num2str(aom1) '#' num2str(aom2) '#']; %#ok<NASGU>
+        netcomm('write',SYSPARAMS.netcommobj,int8(commandstring));
     end
     set(handles.aom1_state,'String','On');
     a = imread('on.bmp');
@@ -1322,8 +1224,7 @@ if SYSPARAMS.realsystem == 1
             handles.alignValH2 = handles.alignValH2+1;
             if (handles.alignValH2 > 590)
                 handles.alignValH1 = handles.alignValH1 + 1;
-                horizontalaligncommand = ['AllignH#' num2str(handles.alignValH1) '#' num2str(handles.alignValH2-handles.alignValH1) '#']; %#ok<NASGU>
-                MATLABAomControl32(horizontalaligncommand);
+                horizontalaligncommand = ['AllignH#' num2str(handles.alignValH1) '#' num2str(handles.alignValH2-handles.alignValH1) '#']; %#ok<NASGU>                
                 if (handles.alignValH1 == 0)
                     message = ['Left AOM Hor:' num2str(handles.alignValH1) ' Ver:' num2str(handles.alignValV1) ' Diff: ' num2str(handles.alignValH1)];
                 else
@@ -1331,8 +1232,7 @@ if SYSPARAMS.realsystem == 1
                 end
                 set(handles.aom_state, 'String',message);
             else
-                horizontalaligncommand = ['AllignH#' num2str(handles.alignValH1) '#' num2str(handles.alignValH2) '#']; %#ok<NASGU>
-                MATLABAomControl32(horizontalaligncommand);
+                horizontalaligncommand = ['AllignH#' num2str(handles.alignValH1) '#' num2str(handles.alignValH2) '#']; %#ok<NASGU>                
                 if (590-handles.alignValH2) == 0
                     message = ['Right AOM Hor:' num2str(handles.alignValH2) ' Ver:' num2str(handles.alignValV1) ' Diff: ' num2str(590-handles.alignValH2)];
                 else
@@ -1346,8 +1246,7 @@ if SYSPARAMS.realsystem == 1
             handles.alignValH2 = handles.alignValH2-1;
             if (handles.alignValH2 >= 590)
                 handles.alignValH1 = handles.alignValH1 - 1;
-                horizontalaligncommand = ['AllignH#' num2str(handles.alignValH1) '#' num2str(handles.alignValH2-handles.alignValH1) '#']; %#ok<NASGU>
-                MATLABAomControl32(horizontalaligncommand);
+                horizontalaligncommand = ['AllignH#' num2str(handles.alignValH1) '#' num2str(handles.alignValH2-handles.alignValH1) '#']; %#ok<NASGU>                
                 if (handles.alignValH1 == 0)
                     message = ['Left AOM Hor:' num2str(handles.alignValH1) ' Ver:' num2str(handles.alignValV1) ' Diff: ' num2str(handles.alignValH1)];
                 else
@@ -1355,8 +1254,7 @@ if SYSPARAMS.realsystem == 1
                 end
                 set(handles.aom_state, 'String',message);
             else
-                horizontalaligncommand = ['AllignH#' num2str(handles.alignValH1) '#' num2str(handles.alignValH2) '#']; %#ok<NASGU>
-                MATLABAomControl32(horizontalaligncommand);
+                horizontalaligncommand = ['AllignH#' num2str(handles.alignValH1) '#' num2str(handles.alignValH2) '#']; %#ok<NASGU>                
                 if (590-handles.alignValH2) == 0
                     message = ['Right AOM Hor:' num2str(handles.alignValH2) ' Ver:' num2str(handles.alignValV1) ' Diff: ' num2str(590-handles.alignValH2)];
                 else
@@ -1367,8 +1265,7 @@ if SYSPARAMS.realsystem == 1
             
             %up arrow
         elseif moveresponse == kb_UpConst2
-            verticalaligncommand = ['AllignV#' num2str(handles.alignValV1+1) '#']; %#ok<NASGU>
-            MATLABAomControl32(verticalaligncommand);
+            verticalaligncommand = ['AllignV#' num2str(handles.alignValV1+1) '#']; %#ok<NASGU>            
             handles.alignValV1 = handles.alignValV1+1;
             message = ['Right AOM Hor:' num2str(handles.alignValH2) ' Ver:' num2str(handles.alignValV1)];
             set(handles.aom_state, 'String',message);
@@ -1381,7 +1278,6 @@ if SYSPARAMS.realsystem == 1
                 handles.alignValV1 = 0;
             else
                 verticalaligncommand = ['AllignV#' num2str(handles.alignValV1) '#']; %#ok<NASGU>
-                MATLABAomControl32(verticalaligncommand);
             end
             message = ['Right AOM Hor:' num2str(handles.alignValH2) ' Ver:' num2str(handles.alignValV1)];
             set(handles.aom_state, 'String',message);
@@ -1421,11 +1317,7 @@ else
 end
 if SYSPARAMS.realsystem == 1
     command = ['Loop#' num2str(SYSPARAMS.loop) '#'];
-    if SYSPARAMS.board == 'm'
-        MATLABAomControl32(command);
-    else
-        netcomm('write',SYSPARAMS.netcommobj,int8(command));
-    end
+    netcomm('write',SYSPARAMS.netcommobj,int8(command));
 end
 % Hint: get(hObject,'Value') returns toggle state of loop_sequence
 
@@ -1464,11 +1356,7 @@ switch SYSPARAMS.aom_pow_sel
 end
 if SYSPARAMS.realsystem == 1
     command = ['UpdatePower#' num2str(SYSPARAMS.aom_pow_sel) '#' num2str(powerLvl) '#'];
-    if SYSPARAMS.board == 'm'
-        MATLABAomControl32(command);
-    else
-        netcomm('write',SYSPARAMS.netcommobj,int8(command));
-    end
+    netcomm('write',SYSPARAMS.netcommobj,int8(command));
 end
 
 % --- Executes during object creation, after setting all properties.
@@ -1628,7 +1516,6 @@ else
     off_limit = flash_duty_string(index+1:length(flash_duty_string));
     command = ['Flash#' on_limit '#' off_limit '#'];
 end
-MATLABAomControl32(command);
 
 % --- Executes on selection change in flash_freq.
 function flash_freq_Callback(hObject, eventdata, handles)
@@ -1891,12 +1778,8 @@ else
     SYSPARAMS.aoms_state(1) = 0;
 end
 if SYSPARAMS.realsystem == 1
-    commandstring = ['TurnOn#0#' num2str(SYSPARAMS.aoms_state(1)) '#']; 
-    if SYSPARAMS.board == 'm'
-        MATLABAomControl32(commandstring);
-    else
-        netcomm('write',SYSPARAMS.netcommobj,int8(commandstring));
-    end
+    commandstring = ['TurnOn#0#' num2str(SYSPARAMS.aoms_state(1)) '#'];
+    netcomm('write',SYSPARAMS.netcommobj,int8(commandstring));
 end
 
 % --- Executes on button press in red_on_off.
@@ -1919,11 +1802,7 @@ else
 end
 if SYSPARAMS.realsystem == 1
     commandstring = ['TurnOn#1#' num2str(SYSPARAMS.aoms_state(2)) '#']; 
-    if SYSPARAMS.board == 'm'
-        MATLABAomControl32(commandstring);
-    else
-        netcomm('write',SYSPARAMS.netcommobj,int8(commandstring));
-    end
+    netcomm('write',SYSPARAMS.netcommobj,int8(commandstring));
 end
 
 % --- Executes on button press in green_on_off.
@@ -1946,11 +1825,7 @@ else
 end
 if SYSPARAMS.realsystem == 1
     commandstring = ['TurnOn#2#' num2str(SYSPARAMS.aoms_state(3)) '#']; 
-    if SYSPARAMS.board == 'm'
-        MATLABAomControl32(commandstring);
-    else
-        netcomm('write',SYSPARAMS.netcommobj,int8(commandstring));
-    end
+    netcomm('write',SYSPARAMS.netcommobj,int8(commandstring));
 end
 
 % --- Executes on button press in blue_on_off.
@@ -1973,11 +1848,7 @@ else
 end
 if SYSPARAMS.realsystem == 1
     commandstring = ['TurnOn#3#' num2str(SYSPARAMS.aoms_state(4)) '#']; 
-    if SYSPARAMS.board == 'm'
-        MATLABAomControl32(commandstring);
-    else
-        netcomm('write',SYSPARAMS.netcommobj,int8(commandstring));
-    end
+    netcomm('write',SYSPARAMS.netcommobj,int8(commandstring));
 end
 
 % --- Executes on button press in display_button.
@@ -2038,19 +1909,15 @@ end
 if SYSPARAMS.realsystem == 1
     switch AOMSel.loadbuf
         case 0
-            commandstring = ['Update#' num2str(value) '#-2#-2#-2#']; % -1 loads the last buffer that has been loaded
+            commandstring = ['Update#' num2str(value) '#-2#-2#']; % -1 loads the last buffer that has been loaded
         case 1
-            commandstring = ['Update#-2#' num2str(value) '#-2#-2#']; % -1 loads the last buffer that has been loaded
+            commandstring = ['Update#-2#' num2str(value) '#-2#']; % -1 loads the last buffer that has been loaded
         case 2
-            commandstring = ['Update#-2#-2#' num2str(value) '#-2#']; % -1 loads the last buffer that has been loaded
+            commandstring = ['Update#-2#-2#' num2str(value) '#']; % -1 loads the last buffer that has been loaded
         case 3
             commandstring = ['Update#-2#-2#-2#' num2str(value) '#']; % -1 loads the last buffer that has been loaded
     end
-    if SYSPARAMS.board == 'm'
-        MATLABAomControl32(commandstring);
-    else
-        netcomm('write',SYSPARAMS.netcommobj,int8(commandstring));
-    end
+    netcomm('write',SYSPARAMS.netcommobj,int8(commandstring));
 end
 buflist = getappdata(hAomControl, 'BufList');
 fullpath = [char(buflist(value,1)) char(buflist(value,2)) '.' char(buflist(value,3))];
@@ -2122,31 +1989,17 @@ function raster1_ButtonDownFcn(hObject, eventdata, handles)
 % hObject    handle to raster1 (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-global SYSPARAMS;
-if SYSPARAMS.tracking == 1 && SYSPARAMS.board == 'm'
-    cp = get(gca,'currentpoint');
-    x = round(cp(1,1)-1);
-    y = round((SYSPARAMS.rasterV-cp(1,2))-1);
-    if (x>=0 && x<=511 && y>=0 && y<=511)
-        command = ['Locate#' num2str(x) '#' num2str(y) '# #'];
-        MATLABAomControl32(command);
-    end
-end
 
 % --- Executes on slider movement.
 function alignh_slider_Callback(hObject, eventdata, handles)  %#ok<DEFNU>
 global SYSPARAMS StimParams;
 alignVal = round(get(hObject, 'Value'));
 set(handles.alignh_slider, 'Value', alignVal);
-StimParams.aomoffs(SYSPARAMS.aomoffsvsel, 2) = 32-alignVal;
-set(handles.alignh_val, 'String', num2str(StimParams.aomoffs(SYSPARAMS.aomoffsvsel, 2)));
+StimParams.aomTCA(SYSPARAMS.aomoffsvsel, 2) = 32-alignVal;
+set(handles.alignh_val, 'String', num2str(StimParams.aomTCA(SYSPARAMS.aomoffsvsel, 2)));
 if SYSPARAMS.realsystem == 1
-    aligncommand = ['UpdateOffset#' num2str(StimParams.aomoffs(1, 1)) '#' num2str(StimParams.aomoffs(1, 2)) '#' num2str(StimParams.aomoffs(2, 1)) '#' num2str(StimParams.aomoffs(2, 2)) '#' num2str(StimParams.aomoffs(3, 1)) '#' num2str(StimParams.aomoffs(3, 2)) '#'];   %#ok<NASGU>
-    if SYSPARAMS.board == 'm'
-        MATLABAomControl32(aligncommand);
-    else
-        netcomm('write',SYSPARAMS.netcommobj,int8(aligncommand));
-    end
+    aligncommand = ['UpdateTCA#' num2str(round(StimParams.aomTCA(1, 1))) '#' num2str(round(StimParams.aomTCA(1, 2))) '#' num2str(round(StimParams.aomTCA(2, 1))) '#' num2str(round(StimParams.aomTCA(2, 2))) '#' num2str(round(StimParams.aomTCA(3, 1))) '#' num2str(round(StimParams.aomTCA(3, 2))) '#'];   %#ok<NASGU>
+    netcomm('write',SYSPARAMS.netcommobj,int8(aligncommand));
 end
 if SYSPARAMS.sysmode~= 1
     Show_Image(0);
@@ -2170,8 +2023,8 @@ SYSPARAMS.aomoffsvsel = 2;
 set(handles.aligngrh,'Value',1);
 set(handles.alignredh,'Value',0);
 set(handles.alignblueh,'Value',0);
-set(handles.alignh_slider, 'Value', 32-StimParams.aomoffs(SYSPARAMS.aomoffsvsel,2));
-set(handles.alignh_val, 'String', num2str(StimParams.aomoffs(SYSPARAMS.aomoffsvsel,2)));
+set(handles.alignh_slider, 'Value', 32-StimParams.aomTCA(SYSPARAMS.aomoffsvsel,2));
+set(handles.alignh_val, 'String', num2str(StimParams.aomTCA(SYSPARAMS.aomoffsvsel,2)));
 
 % --- Executes on button press in alignredh.
 function alignredh_Callback(hObject, eventdata, handles)
@@ -2186,8 +2039,8 @@ SYSPARAMS.aomoffsvsel = 1;
 set(handles.alignredh,'Value',1);
 set(handles.aligngrh,'Value',0);
 set(handles.alignblueh,'Value',0);
-set(handles.alignh_slider, 'Value', 32-StimParams.aomoffs(SYSPARAMS.aomoffsvsel,2));
-set(handles.alignh_val, 'String', num2str(StimParams.aomoffs(SYSPARAMS.aomoffsvsel,2)));
+set(handles.alignh_slider, 'Value', 32-StimParams.aomTCA(SYSPARAMS.aomoffsvsel,2));
+set(handles.alignh_val, 'String', num2str(StimParams.aomTCA(SYSPARAMS.aomoffsvsel,2)));
 
 % --- Executes on button press in alignblueh.
 function alignblueh_Callback(hObject, eventdata, handles)
@@ -2202,8 +2055,8 @@ SYSPARAMS.aomoffsvsel = 3;
 set(handles.alignblueh,'Value',1);
 set(handles.aligngrh,'Value',0);
 set(handles.alignredh,'Value',0);
-set(handles.alignh_slider, 'Value', 32-StimParams.aomoffs(SYSPARAMS.aomoffsvsel,2));
-set(handles.alignh_val, 'String', num2str(StimParams.aomoffs(SYSPARAMS.aomoffsvsel,2)));
+set(handles.alignh_slider, 'Value', 32-StimParams.aomTCA(SYSPARAMS.aomoffsvsel,2));
+set(handles.alignh_val, 'String', num2str(StimParams.aomTCA(SYSPARAMS.aomoffsvsel,2)));
 
 % --- Executes when user attempts to close aom_main_figure.
 %function aom_main_figure_CloseRequestFcn(hObject, eventdata, handles)
@@ -2223,15 +2076,11 @@ function alignv_slider_Callback(hObject, eventdata, handles)
 global SYSPARAMS StimParams;
 alignVal = round(get(hObject, 'Value'));
 set(handles.alignv_slider, 'Value', alignVal);
-StimParams.aomoffs(SYSPARAMS.aomoffshsel, 1) = alignVal-16;
-set(handles.alignv_val, 'String', num2str(StimParams.aomoffs(SYSPARAMS.aomoffshsel, 1)));
+StimParams.aomTCA(SYSPARAMS.aomoffshsel, 1) = alignVal-16;
+set(handles.alignv_val, 'String', num2str(StimParams.aomTCA(SYSPARAMS.aomoffshsel, 1)));
 if SYSPARAMS.realsystem == 1
-    aligncommand = ['UpdateOffset#' num2str(StimParams.aomoffs(1, 1)) '#' num2str(StimParams.aomoffs(1, 2)) '#' num2str(StimParams.aomoffs(2, 1)) '#' num2str(StimParams.aomoffs(2, 2)) '#' num2str(StimParams.aomoffs(3, 1)) '#' num2str(StimParams.aomoffs(3, 2)) '#'];   %#ok<NASGU>
-    if SYSPARAMS.board == 'm'
-        MATLABAomControl32(aligncommand);
-    else
-        netcomm('write',SYSPARAMS.netcommobj,int8(aligncommand));
-    end
+    aligncommand = ['UpdateTCA#' num2str(round(StimParams.aomTCA(1, 1))) '#' num2str(round(StimParams.aomTCA(1, 2))) '#' num2str(round(StimParams.aomTCA(2, 1))) '#' num2str(round(StimParams.aomTCA(2, 2))) '#' num2str(round(StimParams.aomTCA(3, 1))) '#' num2str(round(StimParams.aomTCA(3, 2))) '#'];   %#ok<NASGU>
+    netcomm('write',SYSPARAMS.netcommobj,int8(aligncommand));
 end
 if SYSPARAMS.sysmode~= 1
     Show_Image(0);
@@ -2263,8 +2112,8 @@ SYSPARAMS.aomoffshsel = 1;
 set(handles.alignredv,'Value',1);
 set(handles.aligngrv,'Value',0);
 set(handles.alignbluev,'Value',0);
-set(handles.alignv_slider, 'Value', StimParams.aomoffs(1,1)+16);
-set(handles.alignv_val, 'String', num2str(StimParams.aomoffs(1,1)));
+set(handles.alignv_slider, 'Value', StimParams.aomTCA(1,1)+16);
+set(handles.alignv_val, 'String', num2str(StimParams.aomTCA(1,1)));
 
 
 % --- Executes on button press in aligngrv.
@@ -2280,8 +2129,8 @@ SYSPARAMS.aomoffshsel = 2;
 set(handles.aligngrv,'Value',1);
 set(handles.alignredv,'Value',0);
 set(handles.alignbluev,'Value',0);
-set(handles.alignv_slider, 'Value', StimParams.aomoffs(2,1)+16);
-set(handles.alignv_val, 'String', num2str(StimParams.aomoffs(2,1)));
+set(handles.alignv_slider, 'Value', StimParams.aomTCA(2,1)+16);
+set(handles.alignv_val, 'String', num2str(StimParams.aomTCA(2,1)));
 
 
 % --- Executes on button press in alignbluev.
@@ -2297,8 +2146,8 @@ SYSPARAMS.aomoffshsel = 3;
 set(handles.alignbluev,'Value',1);
 set(handles.aligngrv,'Value',0);
 set(handles.alignredv,'Value',0);
-set(handles.alignv_slider, 'Value', StimParams.aomoffs(3,1)+16);
-set(handles.alignv_val, 'String', num2str(StimParams.aomoffs(3,1)));
+set(handles.alignv_slider, 'Value', StimParams.aomTCA(3,1)+16);
+set(handles.alignv_val, 'String', num2str(StimParams.aomTCA(3,1)));
 
 
 
@@ -2364,7 +2213,7 @@ if strcmp(eventdata.Key, 'return') == 1
         alignVal = 32;
     end 
     set(handles.alignh_val, 'String', num2str(alignVal));
-    StimParams.aomoffs(SYSPARAMS.aomoffsvsel, 2) = alignVal;
+    StimParams.aomTCA(SYSPARAMS.aomoffsvsel, 2) = alignVal;
 end
 if SYSPARAMS.sysmode~= 1
     Show_Image(0);
@@ -2387,7 +2236,7 @@ if strcmp(eventdata.Key, 'return') == 1
         alignVal = 16;
     end 
     set(handles.alignv_val, 'String', num2str(alignVal));
-    StimParams.aomoffs(SYSPARAMS.aomoffshsel, 1) = alignVal;
+    StimParams.aomTCA(SYSPARAMS.aomoffshsel, 1) = alignVal;
 end
 if SYSPARAMS.sysmode~= 1
     Show_Image(0);
@@ -2406,11 +2255,7 @@ OrigFrame.green = ones(16,16)*255;
 OrigFrame.blue = ones(16,16)*255;
 if SYSPARAMS.realsystem == 1
     aligncommand = ['LoadDefaults#0#'];   %#ok<NASGU>
-    if SYSPARAMS.board == 'm'
-        MATLABAomControl32(aligncommand);
-    else
-        netcomm('write',SYSPARAMS.netcommobj,int8(aligncommand));
-    end
+    netcomm('write',SYSPARAMS.netcommobj,int8(aligncommand));
 end
 Show_Image(0);
 
@@ -2420,7 +2265,7 @@ function turn_on_tca_Callback(hObject, eventdata, handles)
 % hObject    handle to turn_on_tca (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-global SYSPARAMS StimParams OrigFrame;
+global SYSPARAMS StimParams OrigFrame VideoParams;
 SYSPARAMS.sysmode = 0;
 OrigFrame.ir = 0;
 OrigFrame.red = 0;
@@ -2429,37 +2274,142 @@ OrigFrame.blue = 0;
 StimParams.filepath{4} = '-';
 currentpath = cd;
 StimParams.stimpath = [fullfile(currentpath, 'BMP_Files', 'TCA') filesep];
-if SYSPARAMS.realsystem == 1
-    %set gain to zero
-    commandstring = ['Gain#0#']; %gain=0
-    netcomm('write',SYSPARAMS.netcommobj,int8(commandstring));
-    %set flash frequency to 30Hz
-    %load tca bitmaps
-    commandstring = ['Load#1#' StimParams.stimpath '#TCA256x128IR#0#0#bmp#']; %IR
-    netcomm('write',SYSPARAMS.netcommobj,int8(commandstring));
-    pause(0.1);
-    commandstring = ['Load#0#' StimParams.stimpath '#TCA256x128R#0#0#bmp#']; %Red
-    netcomm('write',SYSPARAMS.netcommobj,int8(commandstring));
-    pause(0.1);
-    commandstring = ['Load#0#' StimParams.stimpath '#TCA256x128G#0#0#bmp#']; %Green
-    netcomm('write',SYSPARAMS.netcommobj,int8(commandstring));
-    pause(0.1);
-    %update stimuli patterns
-    commandstring = ['Update#2#3#4#-1#']; % -1 loads the last buffer that has been loaded
-    netcomm('write',SYSPARAMS.netcommobj,int8(commandstring));
+if SYSPARAMS.realsystem == 1    
+    uiwait(TCAdetails);
+    if isstruct(getappdata(getappdata(0,'hAomControl'),'CFG')) == 1
+        % Get configuration structure (CFG) from Config GUI
+        CFG = getappdata(getappdata(0,'hAomControl'),'CFG');
+        if CFG.ok == 1
+            %set gain to zero
+            commandstring = ['Gain#0#']; %gain=0
+            netcomm('write',SYSPARAMS.netcommobj,int8(commandstring));
+            %set flash frequency to 30Hz
+            commandstring = ['Flash#30#0#'];
+            netcomm('write',SYSPARAMS.netcommobj,int8(commandstring));
+            pause(0.2);
+            %set stimulus to center of image
+            commandstring = ['LocUpdateAbs#256#256#'];
+            netcomm('write',SYSPARAMS.netcommobj,int8(commandstring));
+            pause(0.2);
+            %load tca bitmaps
+            commandstring = ['Load#1#' StimParams.stimpath '#TCA256x128IR#0#0#bmp#']; %IR
+            netcomm('write',SYSPARAMS.netcommobj,int8(commandstring));
+            pause(0.1);
+            commandstring = ['Load#0#' StimParams.stimpath '#TCA256x128R#0#0#bmp#']; %Red
+            netcomm('write',SYSPARAMS.netcommobj,int8(commandstring));
+            pause(0.1);
+            commandstring = ['Load#0#' StimParams.stimpath '#TCA256x128G#0#0#bmp#']; %Green
+            netcomm('write',SYSPARAMS.netcommobj,int8(commandstring));
+            pause(0.1);
+            %update stimuli patterns
+            commandstring = ['Update#2#3#4#-1#']; % -1 loads the last buffer that has been loaded
+            netcomm('write',SYSPARAMS.netcommobj,int8(commandstring));
+            pause(0.1);
+            set(handles.turn_on_tca, 'Enable', 'off');
+            drawnow;
+            set(handles.turn_on_tca, 'Enable', 'on');
+%             uicontrol(handles.im_panel1)
+            status = sprintf('Press Space bar to start recording 1 of %d TCA videos', VideoParams.numofvideos);
+            set(handles.aom1_state, 'String', status);
+            error = 0;
+            gui_handle = gcf;
+            set(gcf, 'KeyPressFcn','uiresume');
+            for i=1:VideoParams.numofvideos
+                uiwait;
+                resp = get(gui_handle,'CurrentKey'); % wait for space bar to be pressed
+                if strcmpi(resp, 'space')
+                    status = sprintf('Now saving Video %d of %d', i, VideoParams.numofvideos);
+                    set(handles.aom1_state, 'String', status);
+                    % send command to record a video with specific name
+                    commandstring = ['GRVIDL#' CFG.filename num2str(i) '#' num2str(VideoParams.videodur) '#'];
+                    netcomm('write',SYSPARAMS.netcommobj,int8(commandstring));
+                    pause(VideoParams.videodur+1)
+                    if i<VideoParams.numofvideos
+                        status = sprintf('Done saving Video %d of %d \n Press Space bar to start recording video %d of %d TCA videos', i, VideoParams.numofvideos, i+1, VideoParams.numofvideos);
+                    else
+                        status = sprintf('Done saving all %d videos', VideoParams.numofvideos);
+                    end
+                    set(handles.aom1_state, 'String', status);
+                end
+            end
+            set(handles.aom1_state, 'String', 'Please wait while TCA offsets are being computed');
+            for i=1:VideoParams.numofvideos
+                % now we have a TCA video ready to be processed
+                status = vid.computetca([CFG.filepath, CFG.filename num2str(i)]);
+                if strfind(status, 'Problem')
+                    error = 1;
+                    set(handles.aom1_state, 'String', status);
+                else
+                    temp = regexp(status,'[+-]?\d+\.?\d*', 'match'); % extract values to update SYSPARAMS TCA values
+                    TCAxy(i,1:4) = cell2mat(cellfun(@str2num,temp(1:end),'un',0).');
+                end
+            end
+            if error == 0
+                % now find the avarage of TCA offsets
+                TCAxy = median(TCAxy,1);
+                status = sprintf('    RX        RY       GX        GY  \n %2.3f  %2.3f  %2.3f  %2.3f ', TCAxy(1), TCAxy(2), TCAxy(3), TCAxy(4));
+                set(handles.aom1_state, 'String', status);  
+                disp(status);
+
+                StimParams.aomTCA(1,1) = TCAxy(1);
+                StimParams.aomTCA(1,2) = TCAxy(2);
+                StimParams.aomTCA(2,1) = TCAxy(3);
+                StimParams.aomTCA(2,2) = TCAxy(4);
+
+                if CFG.validateTCA == 1 %do TCA validation with the above computed values                
+                    set(handles.aom1_state, 'String', 'Setting up TCA validation, please wait...');
+                    % Load 256x256 square stimuli in all 3 channels                
+                    commandstring = ['Load#0#' StimParams.stimpath '#Square256_100#0#0#bmp#']; %#ok<NASGU> 
+                    netcomm('write',SYSPARAMS.netcommobj,int8(commandstring));
+                    pause(0.1);
+                    commandstring = ['Load#0#' StimParams.stimpath '#Square256#0#0#bmp#']; %#ok<NASGU> 
+                    netcomm('write',SYSPARAMS.netcommobj,int8(commandstring));
+                    pause(0.1);
+                    %update stimuli patterns
+                    commandstring = ['Update#5#6#6#-1#']; % -1 loads the last buffer that has been loaded
+                    netcomm('write',SYSPARAMS.netcommobj,int8(commandstring));
+                    pause(0.1);
+                    %update TCA values in ICANDI
+                    commandstring = ['UpdateTCA#' num2str(round(StimParams.aomTCA(1, 1))) '#' num2str(round(StimParams.aomTCA(1, 2))) '#' num2str(round(StimParams.aomTCA(2, 1))) '#' num2str(round(StimParams.aomTCA(2, 2))) '#' num2str(round(StimParams.aomTCA(3, 1))) '#' num2str(round(StimParams.aomTCA(3, 2))) '#'];   %#ok<NASGU>
+                    netcomm('write',SYSPARAMS.netcommobj,int8(commandstring));                
+                    set(handles.aom1_state, 'String', 'Check ICANDI for TCA validation, Press Space bar to end TCA validation');
+                    figure(gui_handle);
+                    uiwait;
+                    resp = get(gui_handle,'CurrentKey'); % wait for space bar to be pressed
+                    if strcmpi(resp, 'space')
+                        set(handles.aom1_state, 'String', 'Done TCA validation, loading default stimuli');
+                    end
+                end
+            end
+            
+            uiresume;             
+            commandstring = ['LoadDefaults#0#'];
+            netcomm('write',SYSPARAMS.netcommobj,int8(commandstring)); 
+            pause(0.1);         
+            %set gain to 1
+            commandstring = ['Gain#1#']; %gain=0
+            netcomm('write',SYSPARAMS.netcommobj,int8(commandstring));
+            pause(0.1);         
+            %turn off ICANDI TCA application
+            commandstring = ['ApplyTCA#0#']; %gain=0
+            netcomm('write',SYSPARAMS.netcommobj,int8(commandstring));
+            
+%             StimParams.filepath{2} = '-';
+%             StimParams.filepath{3} = '-';
+%             StimParams.filepath{1} = fullfile(currentpath, 'BMP_Files', 'TCA', 'TCA256x128IR.bmp');
+%             Show_Image(1);
+%             StimParams.filepath{1} = '-';
+%             StimParams.filepath{3} = '-';
+%             StimParams.filepath{2} = fullfile(currentpath, 'BMP_Files', 'TCA', 'TCA256x128R.bmp');
+%             Show_Image(1);
+%             StimParams.filepath{1} = '-';
+%             StimParams.filepath{2} = '-';
+%             StimParams.filepath{3} = fullfile(currentpath, 'BMP_Files', 'TCA', 'TCA256x128G.bmp');
+%             Show_Image(1);
+        end
+    end
+    
 end
-StimParams.filepath{2} = '-';
-StimParams.filepath{3} = '-';
-StimParams.filepath{1} = fullfile(currentpath, 'BMP_Files', 'TCA', 'TCA256x128IR.bmp');
-Show_Image(1);
-StimParams.filepath{1} = '-';
-StimParams.filepath{3} = '-';
-StimParams.filepath{2} = fullfile(currentpath, 'BMP_Files', 'TCA', 'TCA256x128R.bmp');
-Show_Image(1);
-StimParams.filepath{1} = '-';
-StimParams.filepath{2} = '-';
-StimParams.filepath{3} = fullfile(currentpath, 'BMP_Files', 'TCA', 'TCA256x128G.bmp');
-Show_Image(1);
 
 % --- Executes on button press in pupiltracking.
 function pupiltracking_Callback(hObject, eventdata, handles)
@@ -2489,15 +2439,9 @@ global SYSPARAMS VideoParams StimParams; %#ok<NUSED>
 
 
 if SYSPARAMS.realsystem == 1
-    if SYSPARAMS.board == 'm'
-        MATLABAomControl32('Stop#');
-        pause(.05);
-        MATLABAomControl32('ExtClockOff#');
-    else
-        netcomm('close',SYSPARAMS.netcommobj);
-        clear SYSPARAMS.netcommobj;
-        SYSPARAMS.netcommobj = 0;
-    end
+    netcomm('close',SYSPARAMS.netcommobj);
+    clear SYSPARAMS.netcommobj;
+    SYSPARAMS.netcommobj = 0;
 end
 try
     save('Initialization.mat', 'SYSPARAMS', 'VideoParams', 'StimParams');    
