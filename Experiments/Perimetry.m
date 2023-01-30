@@ -7,8 +7,10 @@ function Perimetry
 global SYSPARAMS StimParams VideoParams;
 
 % ---- Quest set up (need these to be in CFG).
-tGuess = log10(0.1);
-tGuessSD = log10(0.5);
+% tGuess = log10(0.5);
+tGuess = log10(1);
+% tGuessSD = log10(0.5);
+tGuessSD = 3; % Quest assumes this is in log units, so this corresponds to 0.001 to 1;
 
 % beta is the slope of a Weibull function. This parameter has been
 % estimated from real data (20076R=1.6, 20053R=2.3, 20092L=2.2)
@@ -34,20 +36,29 @@ tca_green = [CFG.green_x_offset CFG.green_y_offset];
 
 % ---- select cone locations ---- %
 % --------------------------------------------------------------- %
-try
-    [stim_offsets_xy, X_cross_loc, Y_cross_loc] = cone_select.main_gui(...
-        tca_green, VideoParams.rootfolder, CFG);
-    if ~isnan(stim_offsets_xy)
-        cross_xy = [X_cross_loc, Y_cross_loc];
-    else
-        % if stim_offsets_xy return with NaN then we cannot proceed any
-        % further. Therefore, we abort the mission here and now.
-        return
-    end
-catch
-    % if cone_select toolbox is not installed, just select four locations
-    % offset from the center of the raster by ten pixels
-    cross_xy = [-10 10; 10 10; 10 -10; -10 -10];
+choice = questdlg('Would you like to select cones?', ...
+    'Cone selection choice', ...
+    'Yes', 'No', 'Yes');
+switch choice
+    case('Yes')
+        try
+            [stim_offsets_xy, X_cross_loc, Y_cross_loc] = cone_select.main_gui(...
+                tca_green, VideoParams.rootfolder, CFG);
+            if ~isnan(stim_offsets_xy)
+                cross_xy = [X_cross_loc, Y_cross_loc];
+            else
+                % if stim_offsets_xy return with NaN then we cannot proceed any
+                % further. Therefore, we abort the mission here and now.
+                return
+            end
+        catch
+            % if cone_select toolbox is not installed, just select four locations
+            % offset from the center of the raster by ten pixels
+            cross_xy = [-10 10; 10 10; 10 -10; -10 -10];
+        end
+    case 'No'
+        cross_xy = [0 0];
+        stim_offsets_xy = [0];
 end
 
 n_unique_locs = length(stim_offsets_xy);
@@ -81,7 +92,7 @@ CFG.num_locations = n_unique_locs;
 
 % -------set key/value bindings ---------- %
 kb_StimConst = 'space';
-kb_BadConst = 'return';
+kb_BadConst = 'uparrow';
 kb_AbortConst = 'escape';
 
 % no '.' in the file extension.
@@ -315,7 +326,7 @@ while(runExperiment ==1)
                % whether the stimuls was seen
                locs_Quest{test_loc}{active_staircase} = QuestUpdate(...
                    locs_Quest{test_loc}{active_staircase}, ...
-                   log10(Quest_intensity), seen_flag);      
+                   log10(test_intensity), seen_flag);      
                
                 % add trial data to record
                 exp_data.trials(trial) = trial;
@@ -358,6 +369,7 @@ figure;
 hold on;
 count = 1;
 for loc = 1:n_unique_locs
+    
     for s = 1:2
         intensities = 10 .^ exp_data.locs_Quest{loc}{s}.intensity(1:CFG.ntrials);
         response = exp_data.locs_Quest{loc}{s}.response(1:CFG.ntrials);
@@ -365,11 +377,11 @@ for loc = 1:n_unique_locs
         threshold_estimate = 10 .^ QuestMean(exp_data.locs_Quest{loc}{s});
         disp(threshold_estimate);   
 
-        subplot(ceil(n_unique_locs / 4), 4, count);
+%         subplot(ceil(n_unique_locs / 4), 4, count);
         hold on;
-        text(30, 0.5, num2str(round(threshold_estimate, 3)));
-        plot(response, 'rx');
-        plot(intensities, 'k.');
+        text(10*loc, 0.25*s, num2str(round(threshold_estimate, 3)));
+%         plot(response, 'rx');
+        plot(intensities, 'k.-');
     end
     count = count + 1;
 end

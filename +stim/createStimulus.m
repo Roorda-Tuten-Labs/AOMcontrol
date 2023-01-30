@@ -34,12 +34,13 @@ function createStimulus(stimsize, stimshape, intensities, extension)
         if strcmp(stimshape, 'square')
             stim_im = zeros(stimsize, stimsize);
             stim_im(1:end,1:end) = intensity;
-
+            %stim_im = padarray(stim_im, [1 1],0, 'both');
         elseif strcmp(stimshape, 'circle')
             xp = -fix(stimsize / 2):fix(stimsize / 2);
             [x, y] = meshgrid(xp);
             stim_im = (x .^ 2 + y .^ 2) <= (round(stimsize / 2)) .^ 2;
             stim_im = stim_im .* intensity;
+            
         end
         % write to file        
         if strcmpi(extension, 'bmp')

@@ -54,10 +54,11 @@ function PupilVideoTracking_OpeningFcn(hObject, eventdata, handles, varargin)
 
 % Choose default command line output for PupilVideoTracking
 handles.output = hObject;
-set(hObject,'Name','PupilVideoTracking V1.26')
+set(hObject,'Name','PupilVideoTracking V1.3')
 % V1.24 - Sept 9 - for the double pupil artifact
 % V1.25 - Nov 21 - for dimmer videos
 % V1.26 - Feb 13 - bug with DataSync and better traccking for dimmer pupils
+% V1.3 - Aug 27 2019- new usb-c camera
 % Update handles structure
 guidata(hObject, handles);
 global PupilParam;
@@ -103,17 +104,16 @@ set(handles.text5,'String',' ');
 %     Sharpness = 0 [0 14]
 %     WhiteBalance = 0 [0 0]
 global CameraSetting;
-CameraSetting.Brightness=0;
-CameraSetting.Contrast=0;
-CameraSetting.Exposure=-3;
-CameraSetting.ExposureMode=1; %1=manual, 2 =auto
-CameraSetting.Gain=31;
-CameraSetting.Gamma=100;
-CameraSetting.Hue=0;
-CameraSetting.Saturation=64;
-CameraSetting.Sharpness=0;
-CameraSetting.ROI=[128 0 768 768];
+CameraSetting.Brightness=240;
+CameraSetting.Iris=1;
+CameraSetting.Exposure=0.0333;
+CameraSetting.ExposureMode=1; %1=auto, 2 =manual
+CameraSetting.Gain=0;
+CameraSetting.VideoFormat='RGB24 (1216x1024) [Skipping 2x]';
+%CameraSetting.ROI=[128 0 768 768];
+CameraSetting.ROI=[0 0 1216 1024]; % vid= videoinput('winvideo', 1,'RGB24_2448x2048'); % new camera AOSLO l
 SetCameraSetting(handles,CameraSetting)
+
 
 
 
@@ -182,12 +182,16 @@ PupilParam.Flag=0;
 %global IndexTot;  % ***
 if  get(hObject,'UserData')==0,
     
-    vid= videoinput('winvideo', 1,'RGB24_1024x768');   %TSLO
+    vid= videoinput('tisimaq_r2013_64', 1,CameraSetting.VideoFormat);
+    %vid= videoinput('winvideo', 1,'RG16_1216x1024'); % new camera AOSLO lab
+    %vid= videoinput('winvideo', 1,'RGB24_2448x2048'); % new camera AOSLO lab
+    %vid= videoinput('winvideo', 2,'RG16_1216x1024'); % new camera laptop
+   %  vid= videoinput('winvideo', 1,'RGB24_1024x768');   %TSLO
     %vid= videoinput('winvideo', 3,'RGB24_1024x768');    %office 416
     %vid= videoinput('winvideo', 2,'RGB24_1280x720');
     %vid= videoinput('winvideo', 1,'RGB24_640x480');
     % d=imaqhwinfo('winvideo'); d.DeviceInfo.SupportedFormats; get(vid); get(vid,'source')
-    
+    pause(1)
     vidRes = vid.VideoResolution;
     nBands = vid.NumberOfBands;
     load CalibrationSetting
@@ -202,8 +206,9 @@ if  get(hObject,'UserData')==0,
     preview(vid,h);
     %preview(vid)
     axes(handles.axes1);
+    pause(2)
     hold on
-    src_obj = getselectedsource(vid); PupilParam.Camerafps= str2num(get(src_obj,'FrameRate'));
+    src_obj = getselectedsource(vid); PupilParam.Camerafps= get(src_obj,'FrameRate');
     %**************************************************%
     %********* settings camera variables **************%
     %PupilParam.ShowReference=0;
@@ -263,7 +268,8 @@ if  get(hObject,'UserData')==0,
 end
 if  get(hObject,'UserData')==1,
     closepreview(vid);
-    delete(vid); vid=videoinput('winvideo', 1); delete(vid); 
+    
+    delete(vid); vid=videoinput('tisimaq_r2013_64', 1); delete(vid); 
     PupilParam.Video=0;
     Prefix=get(handles.edit3,'String');
     set(handles.pushbutton5,'String','Save Video');
@@ -306,12 +312,17 @@ function pushbutton3_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 global PupilParam
 if PupilParam.ShowReference==0,
-    if PupilParam.x1>1,
+    [X,Y]=ginput(1);
+    %if PupilParam.x1>1,
         PupilParam.ShowReference=1;
-        PupilParam.Refx1=min(PupilParam.x1);
-        PupilParam.Refx2=max(PupilParam.x2);
-        PupilParam.Refy1=min(PupilParam.y1);
-        PupilParam.Refy2=max(PupilParam.y2);
+%         PupilParam.Refx1=min(PupilParam.x1);
+%         PupilParam.Refx2=max(PupilParam.x2);
+%         PupilParam.Refy1=min(PupilParam.y1);
+%         PupilParam.Refy2=max(PupilParam.y2);
+        PupilParam.Refx1=round(X)-30;
+        PupilParam.Refx2=round(X)+30;
+        PupilParam.Refy1=round(Y)-30;
+        PupilParam.Refy2=round(Y)+30;
         
         Refx1=PupilParam.Refx1;
         Refx2=PupilParam.Refx2;
@@ -322,7 +333,7 @@ if PupilParam.ShowReference==0,
         
         DateString = datestr(clock); Spaceidx=findstr(DateString,' '); DateString(Spaceidx)='_'; Spaceidx=findstr(DateString,':'); DateString(Spaceidx)='_';
         save(['.\VideoAndRef\RefPupil_',DateString],'Refx1','Refx2','Refy1','Refy2');
-    end
+    %end
 else
     PupilParam.ShowReference=0;
     set(hObject,'String','Set Reference');
@@ -483,13 +494,8 @@ if PupilParam.Video==1 & PupilParam.PTFlag==0,
     set(hObject,'BackgroundColor',[0.75 0 0]); set(hObject,'ForegroundColor',[1 1 1])
     Block_fps=clock;
     PupilParam.PTData=[0 0 0 0 0 Block_fps];
-    
-    if SYSPARAMS.board == 'm'
-        MATLABAomControl32('MarkFrame#');
-    else
-        % marks the video frame when the subject responds.
-        netcomm('write',SYSPARAMS.netcommobj,int8('MarkFrame#'));
-    end
+    % marks the video frame when the subject responds.
+    netcomm('write',SYSPARAMS.netcommobj,int8('MarkFrame#'));
 else
     %set(handles.pushbutton9,'String','Sync Save'); set(handles.pushbutton9,'BackgroundColor',[0.941176 0.941176 0.941176]); set(handles.pushbutton9,'ForegroundColor',[0 0 0]); PupilParam.Sync=0;
     
@@ -566,13 +572,14 @@ if CameraSetting.ExposureMode==1
     %     disp(CameraSetting.Exposure)
     %     disp(CameraSetting.Gain)
     % SetCameraSetting(handles,CameraSetting)
-    set(hObject,'String','Manual');
+    set(hObject,'String','Auto');
 else
     CameraSetting.ExposureMode=1;
-    set(hObject,'String','Auto');
+    set(hObject,'String','Manual');
 end
 if get(handles.pushbutton2,'UserData')==1, %video in progress
     SetCameraValues(vid,CameraSetting);
+    
 end
 
 
@@ -637,7 +644,7 @@ function slider4_Callback(hObject, eventdata, handles)
 % Hints: get(hObject,'Value') returns position of slider
 %        get(hObject,'Min') and get(hObject,'Max') to determine range of slider
 global CameraSetting
-CameraSetting.Contrast=round(get(hObject,'Value'));
+CameraSetting.Iris=get(hObject,'Value');
 SetCameraSettingText(handles,CameraSetting);
 global vid;
 if get(handles.pushbutton2,'UserData')==1, %video in progress
@@ -665,7 +672,7 @@ function slider5_Callback(hObject, eventdata, handles)
 % Hints: get(hObject,'Value') returns position of slider
 %        get(hObject,'Min') and get(hObject,'Max') to determine range of slider
 global CameraSetting
-CameraSetting.Exposure=round(get(hObject,'Value'));
+CameraSetting.Exposure=get(hObject,'Value');
 SetCameraSettingText(handles,CameraSetting);
 global vid;
 if get(handles.pushbutton2,'UserData')==1, %video in progress
@@ -721,7 +728,7 @@ function slider7_Callback(hObject, eventdata, handles)
 % Hints: get(hObject,'Value') returns position of slider
 %        get(hObject,'Min') and get(hObject,'Max') to determine range of slider
 global CameraSetting
-CameraSetting.Gamma=round(get(hObject,'Value'));
+CameraSetting.Gamma=get(hObject,'Value');
 SetCameraSettingText(handles,CameraSetting);
 global vid;
 if get(handles.pushbutton2,'UserData')==1, %video in progress
@@ -855,15 +862,11 @@ function pushbutton13_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 global CameraSetting;
-CameraSetting.Brightness=0;
-CameraSetting.Contrast=0;
-CameraSetting.Exposure=-13;
-CameraSetting.ExposureMode=2; %1=manual, 2 =auto
-CameraSetting.Gain=16;
-CameraSetting.Gamma=100;
-CameraSetting.Hue=0;
-CameraSetting.Saturation=64;
-CameraSetting.Sharpness=0;
+CameraSetting.Brightness=240;
+CameraSetting.Iris=1;
+CameraSetting.Exposure=0.0333;
+CameraSetting.ExposureMode=2; %1=auto, 2 =manual
+CameraSetting.Gain=0;
 
 global vid;
 SetCameraSetting(handles,CameraSetting)
@@ -895,13 +898,9 @@ else
         % AEB changed aligncommand on 5/30/2017
         % removes the TCA-pupil correction from the aom offsets
         global StimParams
-        aligncommand = ['UpdateOffset#' num2str(StimParams.aomoffs(1, 1)) '#' num2str(StimParams.aomoffs(1, 2)) '#' num2str(StimParams.aomoffs(2, 1)) '#' num2str(StimParams.aomoffs(2, 2)) '#' num2str(StimParams.aomoffs(3, 1)) '#' num2str(StimParams.aomoffs(3, 2)) '#'];   %#ok<NASGU>
-        %aligncommand = ['UpdateOffset#' num2str(0) '#' num2str(0) '#' num2str(0) '#' num2str(0) '#' num2str(0) '#' num2str(0) '#'];   %#ok<NASGU>
-        if SYSPARAMS.board == 'm'
-            MATLABAomControl32(aligncommand);
-        else
-            netcomm('write',SYSPARAMS.netcommobj,int8(aligncommand));
-        end
+        aligncommand = ['UpdateTCA#' num2str(StimParams.aomTCA(1, 1)) '#' num2str(StimParams.aomTCA(1, 2)) '#' num2str(StimParams.aomTCA(2, 1)) '#' num2str(StimParams.aomTCA(2, 2)) '#' num2str(StimParams.aomTCA(3, 1)) '#' num2str(StimParams.aomTCA(3, 2)) '#'];   %#ok<NASGU>
+        %aligncommand = ['UpdateTCA#' num2str(0) '#' num2str(0) '#' num2str(0) '#' num2str(0) '#' num2str(0) '#' num2str(0) '#'];   %#ok<NASGU>
+        netcomm('write',SYSPARAMS.netcommobj,int8(aligncommand));
     end
     PupilParam.EnableTCAComp=0;
     
@@ -938,18 +937,23 @@ global CameraSetting;
 global PupilParam;
 
 if  get(handles.pushbutton2,'UserData')==1,
-    if CameraSetting.ROI(4)==768
+    if CameraSetting.ROI(4)==1024
         set(hObject,'String','Zoom Out');
-        CameraSetting.ROI=[312  184 400 400];
+        %CameraSetting.ROI=[312  184 400 400];
+        CameraSetting.ROI=[96+256 0+256 1120-256 1024-256];
         PupilParam.AvoidedBorder=round(CameraSetting.ROI(3)/5.1);
     else
         set(hObject,'String','Zoom In');
-        CameraSetting.ROI=[128 0 768 768];
+        %CameraSetting.ROI=[128 0 768 768];
+        CameraSetting.ROI=[96 0 1120 1024];
         PupilParam.AvoidedBorder=round(CameraSetting.ROI(3)/5.1);
     end
     
     %%%stoppreview(vid)
-    delete(vid); vid=videoinput('winvideo', 1); delete(vid); vid= videoinput('winvideo', 1,'RGB24_1024x768');
+    delete(vid); videoinput('tisimaq_r2013_64', 1); delete(vid) 
+    %vid= videoinput('winvideo', 1,'RG16_1216x1024');
+    vid= videoinput('tisimaq_r2013_64', 1,CameraSetting.VideoFormat); % new camera AOSLO l
+    %vid= videoinput('winvideo', 1,'RGB24_1024x768');
     nBands = vid.NumberOfBands;
     axes(handles.axes1);
     hold off
@@ -966,14 +970,15 @@ if  get(handles.pushbutton2,'UserData')==1,
     %
     %     set(handles.axes1,'CameraTargetMode','manual')
     %setappdata(h,'UpdatePreviewWindowFcn',@PupilTrackingAlg);
-    vid= videoinput('winvideo', 1,'RGB24_1024x768');
+    vid= videoinput('tisimaq_r2013_64', 1,CameraSetting.VideoFormat); % new camera AOSLO l
+    %vid= videoinput('winvideo', 1,'RGB24_1024x768');
     preview(vid,h);
     axes(handles.axes1);
+    pause(2)
     hold on
-    
     %set(ha,'DataAspectRatio',[(CameraSetting.ROI(3) - CameraSetting.ROI(1)) (CameraSetting.ROI(4)-CameraSetting.ROI(2)) 1]);
     %hold on
-    src_obj = getselectedsource(vid); PupilParam.Camerafps= str2num(get(src_obj,'FrameRate'));
+    src_obj = getselectedsource(vid); PupilParam.Camerafps= get(src_obj,'FrameRate');
     %**************************************************%
     %********* settings camera variables **************%
     %PupilParam.ShowReference=0;

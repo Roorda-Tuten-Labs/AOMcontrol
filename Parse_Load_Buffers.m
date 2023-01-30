@@ -1,4 +1,4 @@
-function Parse_Load_Buffers(parseon)
+function Parse_Load_Buffers(parseon,useGUI)
 % 
 % This function loads stimuli into buffer. 
 % 
@@ -23,13 +23,26 @@ function Parse_Load_Buffers(parseon)
 %           load files with the correct prefix (e.g. frame) and ext (i.e. 
 %           bmp or buf) between 2 and 4, inclusive.
 %
+% useGUI    0 or 1
+%
+%           0 preserves calls to gui handles, 1 allows use of
+%           Parse_Load_Buffers without aom gui. can leave blank for default
+%           usage
+%
 % OUTPUT
 % Nothing. The stimulus files are loaded into memory.
 %
+% 4/23/22   jtp     added gui flag to bypass aom gui handles, allows use
+%                   without aom control gui
+%
 
         
+if nargin < 2
+    useGUI = 1;
+end
+
 global SYSPARAMS StimParams OrigFrame;
-if exist('handles','var') == 0
+if (exist('handles','var') == 0) && useGUI
     handles = get_aom_gui_handle();
 end
 
@@ -65,9 +78,11 @@ if parseon == 1
     end
 
     if (indexbmp == 1 && indexbuf == 1)
-        set(handles.aom1_state, 'String',...
-            ['Error loading image sequence: You must select a folder' ...
-            'that contains at least one bitmap file. Please try again.']);
+        if useGUI
+            set(handles.aom1_state, 'String',...
+                ['Error loading image sequence: You must select a folder' ...
+                'that contains at least one bitmap file. Please try again.']);
+        end
         return
     end
 
@@ -116,15 +131,13 @@ if parseon == 1
             command = ['Load#1#' dirname '#' fprefix '#' ...
                 num2str(min(findices)) '#' num2str(max(findices)) '#' ...
                 fext '#']; %#ok<NASGU>
-            if SYSPARAMS.board == 'm'
-                MATLABAomControl32(command);
-            else
-                netcomm('write',SYSPARAMS.netcommobj,int8(command));
-            end
+            netcomm('write',SYSPARAMS.netcommobj,int8(command));
         end
     end
     pause((max(findices)-min(findices))*0.0005);
-    set(handles.aom1_state, 'String','Done Loading AOM Buffers');
+    if useGUI
+        set(handles.aom1_state, 'String','Done Loading AOM Buffers');
+    end
     StimParams.fprefix = fprefix;
     StimParams.fprefixes = fprefixes;
     StimParams.stimpath = dirname;
@@ -136,11 +149,7 @@ else
         command = ['Load#1#' StimParams.stimpath '#' ...
             StimParams.fprefix '#' num2str(StimParams.sframe) '#' ...
             num2str(StimParams.eframe) '#' StimParams.fext '#']; %#ok<NASGU>
-        if SYSPARAMS.board == 'm'
-            MATLABAomControl32(command);
-        else
-            netcomm('write',SYSPARAMS.netcommobj,int8(command));
-        end
+        netcomm('write',SYSPARAMS.netcommobj,int8(command));
         pause((StimParams.eframe - StimParams.sframe)*0.005);
     end
     OrigFrame = zeros(SYSPARAMS.rasterH, SYSPARAMS.rasterV,4);

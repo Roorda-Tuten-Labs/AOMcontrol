@@ -18,20 +18,12 @@ if SYSPARAMS.realsystem == 1 && VideoParams.vidrecord == 1
     command = ['VPC#' VideoParams.vidprefix '\' num2str(time(2)) '_' ...
         num2str(time(3)) '_' num2str(time(1)) '_' num2str(time(4)) '_' ...
         num2str(time(5)) '_' num2str(time(6)) '\#']; %#ok<NASGU>
-    if SYSPARAMS.board == 'm'
-        MATLABAomControl32(command);
-    else
-        netcomm('write',SYSPARAMS.netcommobj,int8(command));
-    end
+    netcomm('write',SYSPARAMS.netcommobj,int8(command));
     pause(1);
     
     %set video duration
     command = ['VL#' sprintf('%2.2f',VideoParams.videodur) '#']; %#ok<NASGU>
-    if SYSPARAMS.board == 'm'
-        MATLABAomControl32(command);
-    else
-        netcomm('write',SYSPARAMS.netcommobj,int8(command));
-    end
+    netcomm('write',SYSPARAMS.netcommobj,int8(command));
     
 else
     

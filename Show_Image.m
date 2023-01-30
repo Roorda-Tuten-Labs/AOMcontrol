@@ -51,7 +51,7 @@ if SYSPARAMS.aoms_state(2) == 1
             temp_im = OrigFrame.red;
         end
         temp_im_dim = size(temp_im);
-        curframe(floor(256+StimParams.aomoffs(1,2)-temp_im_dim(1)/2)+1:floor(256+StimParams.aomoffs(1,2)-temp_im_dim(1)/2)+temp_im_dim(1),floor(256+StimParams.aomoffs(1,1)-temp_im_dim(2)/2)+1:floor(256+StimParams.aomoffs(1,1)-temp_im_dim(2)/2)+temp_im_dim(2),1) = curframe(floor(256-temp_im_dim(1)/2)+1:floor(256-temp_im_dim(1)/2)+temp_im_dim(1),floor(256-temp_im_dim(2)/2)+1:floor(256-temp_im_dim(2)/2)+temp_im_dim(2),1)+double(temp_im);
+        curframe(floor(256+StimParams.aomTCA(1,2)-temp_im_dim(1)/2)+1:floor(256+StimParams.aomTCA(1,2)-temp_im_dim(1)/2)+temp_im_dim(1),floor(256+StimParams.aomTCA(1,1)-temp_im_dim(2)/2)+1:floor(256+StimParams.aomTCA(1,1)-temp_im_dim(2)/2)+temp_im_dim(2),1) = curframe(floor(256-temp_im_dim(1)/2)+1:floor(256-temp_im_dim(1)/2)+temp_im_dim(1),floor(256-temp_im_dim(2)/2)+1:floor(256-temp_im_dim(2)/2)+temp_im_dim(2),1)+double(temp_im);
     end
 end
 
@@ -59,7 +59,7 @@ if SYSPARAMS.aoms_state(3) == 1
     if max(max(OrigFrame.green))>0%Green
         temp_im = OrigFrame.green;
         temp_im_dim = size(temp_im);
-        curframe(floor(256+StimParams.aomoffs(2,2)-temp_im_dim(1)/2)+1:floor(256+StimParams.aomoffs(2,2)-temp_im_dim(1)/2)+temp_im_dim(1),floor(256+StimParams.aomoffs(2,1)-temp_im_dim(2)/2)+1:floor(256+StimParams.aomoffs(2,1)-temp_im_dim(2)/2)+temp_im_dim(2),2) = double(temp_im);
+        curframe(floor(256+StimParams.aomTCA(2,2)-temp_im_dim(1)/2)+1:floor(256+StimParams.aomTCA(2,2)-temp_im_dim(1)/2)+temp_im_dim(1),floor(256+StimParams.aomTCA(2,1)-temp_im_dim(2)/2)+1:floor(256+StimParams.aomTCA(2,1)-temp_im_dim(2)/2)+temp_im_dim(2),2) = double(temp_im);
     end
 end
 
@@ -67,7 +67,7 @@ if SYSPARAMS.aoms_state(4) == 1
     if max(max(OrigFrame.blue))>0%Blue
         temp_im = OrigFrame.green;
         temp_im_dim = size(temp_im);
-        curframe(floor(256+StimParams.aomoffs(3,2)-temp_im_dim(1)/2)+1:floor(256+StimParams.aomoffs(3,2)-temp_im_dim(1)/2)+temp_im_dim(1),floor(256+StimParams.aomoffs(3,1)-temp_im_dim(2)/2)+1:floor(256+StimParams.aomoffs(3,1)-temp_im_dim(2)/2)+temp_im_dim(2),3) = double(temp_im);
+        curframe(floor(256+StimParams.aomTCA(3,2)-temp_im_dim(1)/2)+1:floor(256+StimParams.aomTCA(3,2)-temp_im_dim(1)/2)+temp_im_dim(1),floor(256+StimParams.aomTCA(3,1)-temp_im_dim(2)/2)+1:floor(256+StimParams.aomTCA(3,1)-temp_im_dim(2)/2)+temp_im_dim(2),3) = double(temp_im);
     end
 end
 
