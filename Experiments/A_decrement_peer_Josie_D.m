@@ -91,8 +91,8 @@ if use_params == 'n'
     expParameters.ntrialsPerGain  = 30;
     expParameters.nTrials         = expParameters.numRetContTotal*expParameters.ntrialsPerGain;
     [expParameters.difConStart]   = GetWithDefault('Starting diffusion constant:', 2940); %random walk starting speed (since speedTestStim to start is 5 pixels)
-    [expParameters.ppdX]          = GetWithDefault('ppd_x:', 302);
-    [expParameters.ppdY]          = GetWithDefault('ppd_y:', 302); %pixels per degree
+    [expParameters.ppdX]          = GetWithDefault('ppd_x:', 301);
+    [expParameters.ppdY]          = GetWithDefault('ppd_y:', 301); %pixels per degree
     
     % Experiment parameters -- STAIRCASE/QUEST 
     expParameters.staircaseType   = 'Quest';
@@ -356,6 +356,7 @@ Mov.pfx = StimParams.fprefix;
 
 % Save responses
 responseVector = nan(expParameters.numRetContTotal, expParameters.ntrialsPerGain);
+pathChoiceVector = nan(2, expParameters.nTrials);
 
 %in case trials need repeating, save to this array
 original_stim1stim2order = stim1Stim2order; %stim1stim2order is the original trial order, but if subject redos during exp, then the actual order is this one
@@ -404,6 +405,7 @@ while runExperiment == 1 % Experiment loop
     %compare the last response
     if gamePad.buttonLeftUpperTrigger || gamePad.buttonLeftLowerTrigger % Start trial
         skip = 0;
+        canRedo = 1;
         
         if ~isempty(lastResponse)
             
@@ -440,7 +442,7 @@ while runExperiment == 1 % Experiment loop
                     end
                     
                     %save data
-                    save(dataFile, 'q', 'expParameters', 'stim1Stim2order', 'testSequence', 'responseVector', 'questdifConVector', 'difConVector');
+                    save(dataFile, 'q', 'expParameters', 'stim1Stim2order', 'testSequence', 'responseVector', 'questdifConVector', 'difConVector', 'pathChoiceVector');
                 end
                 trialNum = trialNum+1;
                 
@@ -455,7 +457,7 @@ while runExperiment == 1 % Experiment loop
                     difConVectorArcmin = difConVector /(final_ppd_converter^2)*3600; %converting from pixels^2 --> deg^2 --> arcmin^2
                     
                     %saving difConVector in arcmin^2/sec
-                    save(dataFile, 'q', 'expParameters', 'stim1Stim2order', 'testSequence', 'responseVector', 'questdifConVector','difConVector', 'difConVectorArcmin', 'original_stim1stim2order', 'trials_repeated');
+                    save(dataFile, 'q', 'expParameters', 'stim1Stim2order', 'testSequence', 'responseVector', 'questdifConVector','difConVector', 'difConVectorArcmin', 'original_stim1stim2order', 'trials_repeated', 'pathChoiceVector');
                     
                     %plotting all data
                     figure
@@ -616,6 +618,14 @@ while runExperiment == 1 % Experiment loop
             sprintf('RWstim = %#1f',stim1Stim2order(row_rw, trialNum))
             sprintf('DifCon = %f',true_diffusionConstants(indexforclosestdifCon))
             
+            pathChoiceVector(1,trialNum) = trialNum;
+            pathChoiceVector(2,trialNum) = stim1Stim2order(row_gain, trialNum);
+            pathChoiceVector(3,trialNum) = stim1Stim2order(row_rw, trialNum);
+            pathChoiceVector(4,trialNum) = difCon;
+            pathChoiceVector(5,trialNum) = indexforclosestdifCon;
+            pathChoiceVector(6,trialNum) = true_diffusionConstants(indexforclosestdifCon);
+            pathChoiceVector(7,trialNum) = pathChoice;
+            
             PlayMovie;
             
             getResponse = 1; % set getResponse to 1 (it will remain at 1 after the first trial)
@@ -639,7 +649,7 @@ while runExperiment == 1 % Experiment loop
         end
         
     elseif gamePad.buttonRightUpperTrigger || gamePad.buttonRightLowerTrigger %gamePad.buttonStart %redo button
-        if getResponse == 1
+        if getResponse == 1 && canRedo == 1
             lastResponse = 'redo';
             Speak('Re do');
             presentStimulus = 1;
@@ -647,6 +657,7 @@ while runExperiment == 1 % Experiment loop
             stim1Stim2order(:,end + 1) = stim1Stim2order(:, trialNum); %put this trial at the end and keep going
             stim1Stim2order(:,trialNum) = [];
             trialNum = trialNum - 1;
+            canRedo = 0;
         end
         
     elseif gamePad.buttonBack %terminate button (if you hit end key on gamepad)
