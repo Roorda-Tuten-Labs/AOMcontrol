@@ -156,14 +156,14 @@ pause(0.5);
 turningOffGreenCh = sprintf('TurnOn#%d#%d#',2,0);
 netcomm('write',SYSPARAMS.netcommobj,int8(turningOffGreenCh));
 
-% Setting Raster & Location commands
-rasterCommand = sprintf('RasterFix#%d#', 1);
-netcomm('write',SYSPARAMS.netcommobj,int8(rasterCommand));
-
 % LocUser#x#y# /*Update stimulus position with absolute x and y positions*/
 centerCommand = sprintf('LocUpdateAbs#%d#%d#', 128, 256); %maybe chance to 128, 256: 1/26/23
 netcomm('write',SYSPARAMS.netcommobj,int8(centerCommand));
 pause(0.5);
+
+% Setting Raster & Location commands
+rasterCommand = sprintf('RasterFix#%d#', 1);
+netcomm('write',SYSPARAMS.netcommobj,int8(rasterCommand));
 
 %% Main experiment loop
 
@@ -390,6 +390,7 @@ while runExperiment == 1 % Experiment loop
     %compare the last response
     if gamePad.buttonLeftUpperTrigger || gamePad.buttonLeftLowerTrigger % Start trial
         skip = 0;
+        canRedo = 1;
         
         if ~isempty(lastResponse)
             
@@ -553,6 +554,11 @@ while runExperiment == 1 % Experiment loop
                         aom1gain(startFramestim1: endFramestim1) = expParameters.rWGain;
                         aom1gain(startFramestim2: endFramestim2) = stim1Stim2order(row_gain,trialNum);
 
+                        %updating ICANDI commands
+                        centerCommand = sprintf('LocUpdateAbs#%d#%d#', 128, 256);
+                        netcomm('write',SYSPARAMS.netcommobj,int8(centerCommand));
+                        pause(0.5);
+                        
                         %update the Mov struct
                         Mov.aom1offx = aom1offx;
                         Mov.aom1offy = aom1offy;
@@ -569,6 +575,11 @@ while runExperiment == 1 % Experiment loop
                         %UPDATING GAINS SO THAT RIGHT STIMULUS IS MOVING 
                         aom1gain(startFramestim1: endFramestim1) = stim1Stim2order(row_gain,trialNum);
                         aom1gain(startFramestim2: endFramestim2) = expParameters.rWGain;
+                        
+                        %updating ICANDI commands
+                        centerCommand = sprintf('LocUpdateAbs#%d#%d#', 128, 256);
+                        netcomm('write',SYSPARAMS.netcommobj,int8(centerCommand));
+                        pause(0.5);
                         
                         %update the Mov struct
                         Mov.aom1offx = aom1offx;
@@ -594,9 +605,6 @@ while runExperiment == 1 % Experiment loop
             %updating ICANDI commands
 %             rasterCommand = sprintf('RasterFix#%d#', 1);
 %             netcomm('write',SYSPARAMS.netcommobj,int8(rasterCommand));
-            
-            centerCommand = sprintf('LocUpdateAbs#%d#%d#', 128, 256);
-            netcomm('write',SYSPARAMS.netcommobj,int8(centerCommand));
             
             sprintf('TrialNum = %#1f',trialNum)
             sprintf('Gain = %#1f',stim1Stim2order(row_gain, trialNum))
@@ -627,7 +635,7 @@ while runExperiment == 1 % Experiment loop
 
     
     elseif gamePad.buttonRightUpperTrigger || gamePad.buttonRightLowerTrigger %gamePad.buttonStart %redo button
-        if getResponse == 1
+        if getResponse == 1 && canRedo == 1
             lastResponse = 'redo';
             Speak('Re do');
             presentStimulus = 1;
@@ -635,6 +643,7 @@ while runExperiment == 1 % Experiment loop
             stim1Stim2order(:,end + 1) = stim1Stim2order(:, trialNum); %put this trial at the end and keep going
             stim1Stim2order(:,trialNum) = [];
             trialNum = trialNum - 1;
+            canRedo = 0;
         end
         
     elseif gamePad.buttonBack %terminate button (if you hit end key on gamepad)
