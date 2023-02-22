@@ -273,8 +273,8 @@ pathChoice = path_options(1);
 %IF Left/Top Stimulus (stim1), then left stimulus is moving rWGain and doing random walk
 if stim1Stim2order(1, 1) == 1
     
-    aom1offx(startFramestim1: endFramestim1) = rw10paths(:,xColumn,pathChoice)+expParameters.stim1_offx;
-    aom1offy(startFramestim1: endFramestim1) = rw10paths(:,yColumn,pathChoice)+expParameters.stim1_offy;
+    aom1offx(startFramestim1: endFramestim1) = round(rw10paths(:,xColumn,pathChoice))+expParameters.stim1_offx;
+    aom1offy(startFramestim1: endFramestim1) = round(rw10paths(:,yColumn,pathChoice))+expParameters.stim1_offy;
     
     %UPDATING THE GAINS SO THAT LEFT SIMULUS IS MOVING
     aom1gain(startFramestim1: endFramestim1) = expParameters.rWGain;
@@ -284,8 +284,8 @@ if stim1Stim2order(1, 1) == 1
     
     %otherwise Right/Down stimulus is moving rWGain and doing random walk
 else
-    aom1offx(startFramestim2: endFramestim2) = rw10paths(:,xColumn,pathChoice)+expParameters.stim1_offx;
-    aom1offy(startFramestim2: endFramestim2) = rw10paths(:,yColumn,pathChoice)+expParameters.stim1_offy;
+    aom1offx(startFramestim2: endFramestim2) = round(rw10paths(:,xColumn,pathChoice))+expParameters.stim1_offx;
+    aom1offy(startFramestim2: endFramestim2) = round(rw10paths(:,yColumn,pathChoice))+expParameters.stim1_offy;
     
     %UPDATING GAINS SO THAT RIGHT STIMULUS IS MOVING 
     aom1gain(startFramestim1: endFramestim1) = stim1Stim2order(row_gain,1);
@@ -544,8 +544,8 @@ while runExperiment == 1 % Experiment loop
                     %Updating stimulus to move, gain & random walk sequence,
                     if stim1Stim2order(row_rw, trialNum) == 1
                         
-                        aom1offx(startFramestim1: endFramestim1) = rw10paths(:,xColumn,pathChoice)+expParameters.stim1_offx;
-                        aom1offy(startFramestim1: endFramestim1) = rw10paths(:,yColumn,pathChoice)+expParameters.stim1_offy;
+                        aom1offx(startFramestim1: endFramestim1) = round(rw10paths(:,xColumn,pathChoice))+expParameters.stim1_offx;
+                        aom1offy(startFramestim1: endFramestim1) = round(rw10paths(:,yColumn,pathChoice))+expParameters.stim1_offy;
                         
                         aom1offx(startFramestim2: endFramestim2) = expParameters.stim1_offx;
                         aom1offy(startFramestim2: endFramestim2) = expParameters.stim1_offy;
@@ -566,8 +566,8 @@ while runExperiment == 1 % Experiment loop
                         
                         pause(0.2);
                     else
-                        aom1offx(startFramestim2: endFramestim2) = rw10paths(:,xColumn,pathChoice)+expParameters.stim1_offx;
-                        aom1offy(startFramestim2: endFramestim2) = rw10paths(:,yColumn,pathChoice)+expParameters.stim1_offy;
+                        aom1offx(startFramestim2: endFramestim2) = round(rw10paths(:,xColumn,pathChoice))+expParameters.stim1_offx;
+                        aom1offy(startFramestim2: endFramestim2) = round(rw10paths(:,yColumn,pathChoice))+expParameters.stim1_offy;
                         
                         aom1offx(startFramestim1: endFramestim1) = expParameters.stim1_offx;
                         aom1offy(startFramestim1: endFramestim1) = expParameters.stim1_offy;
