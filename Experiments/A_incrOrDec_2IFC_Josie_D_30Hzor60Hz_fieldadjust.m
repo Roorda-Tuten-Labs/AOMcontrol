@@ -29,7 +29,7 @@ startup;
 % Get experiment config data stored in appdata for 'hAomControl'
 hAomControl = getappdata(0,'hAomControl');
 
-%------HARD-CODED PARAMETER STUFF FOLLOWS----------------------------------
+%------HARD-CODED PARAMETER FOLLOWS----------------------------------
 use_params = input('Do you want to use previous params? y/n:  ','s');
 
 if use_params == 'n'
@@ -278,7 +278,7 @@ pathChoice = path_options(1);
 %IF Left Stimulus, then left stimulus is moving testGain and doing random walk
 if stim1Stim2order(row_rw, 1) == 1
     
-    aom1offx(startFramestim1: endFramestim1) = rw10paths(:,xColumn,pathChoice);
+    aom1offx(startFramestim1: endFramestim1) = round(rw10paths(:,xColumn,pathChoice));
     aom1offy(startFramestim1: endFramestim1) = round(rw10paths(:,yColumn,pathChoice).*expParameters.field_Y_adjust);
                                                 
     %UPDATING THE GAINS SO THAT LEFT SIMULUS IS MOVING
@@ -287,7 +287,7 @@ if stim1Stim2order(row_rw, 1) == 1
     
     %otherwise Right stimulus is moving testGain and doing random walk
 else
-    aom1offx(startFramestim2:endFramestim2) = rw10paths(:,xColumn,pathChoice);
+    aom1offx(startFramestim2:endFramestim2) = round(rw10paths(:,xColumn,pathChoice));
     aom1offy(startFramestim2:endFramestim2) = round(rw10paths(:,yColumn,pathChoice).*expParameters.field_Y_adjust);
     
     %UPDATING GAINS SO THAT RIGHT STIMULUS IS MOVING
@@ -558,7 +558,7 @@ while runExperiment == 1 % Experiment loop
                     %Updating stimulus to move, gain & random walk sequence,
                     if stim1Stim2order(row_rw, trialNum) == 1
                         
-                        aom1offx(startFramestim1: endFramestim1) = rw10paths(:,xColumn,pathChoice);
+                        aom1offx(startFramestim1: endFramestim1) = round(rw10paths(:,xColumn,pathChoice));
                         aom1offy(startFramestim1: endFramestim1) = round(rw10paths(:,yColumn,pathChoice).*expParameters.field_Y_adjust);
 
                         aom1offx(startFramestim2: endFramestim2) = 0;
@@ -578,7 +578,7 @@ while runExperiment == 1 % Experiment loop
                         
                     else
                         
-                        aom1offx(startFramestim2: endFramestim2) = rw10paths(:,xColumn,pathChoice);
+                        aom1offx(startFramestim2: endFramestim2) = round(rw10paths(:,xColumn,pathChoice));
                         aom1offy(startFramestim2: endFramestim2) = round(rw10paths(:,yColumn,pathChoice).*expParameters.field_Y_adjust);
                         
                         aom1offx(startFramestim1: endFramestim1) = 0;
