@@ -345,10 +345,20 @@ while runExperiment == 1 % Experiment loop
                     Beeper(400, 0.5, 0.15); WaitSecs(0.15); Beeper(400, 0.5, 0.15);  WaitSecs(0.15); Beeper(400, 0.5, 0.15);
                     Speak('Experiment complete');
                     TerminateExp;
+ 
                     if expParameters.staircase == 0
+                        
                         % plot & check we're at the right % correct for each run
-                        correct_gain1 = sum(correctVector(slip_condition == 0))/sum(slip_condition == 0);
-                        correct_gain0 = sum(correctVector(gainseq==0))/sum(gainseq==0);
+                        %NEW swap for fundus view (correctVector_new addition)
+                        correctVector_new = correctVector;
+                        for i = 1:length(correctVector)
+                            if testSequence(i,2) == 90 && responseVector(i) == 0
+                                correctVector_new(i) = 1;
+                            end
+                        end
+                      
+                        correct_gain1 = sum(correctVector_new(slip_condition == 0))/sum(slip_condition == 0);
+                        correct_gain0 = sum(correctVector_new(gainseq==0))/sum(gainseq==0);
                         figure, bar([correct_gain0*100, correct_gain1*100])
                         varnames={'Gain 0'; 'Gain 1'};
                         set(gca,'xticklabel',varnames);
