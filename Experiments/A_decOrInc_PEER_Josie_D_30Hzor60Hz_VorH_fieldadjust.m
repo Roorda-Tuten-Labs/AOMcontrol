@@ -64,6 +64,7 @@ if use_params == 'n'
     if expParameters.increment == 1
         [expParameters.redChpow]      = GetWithDefault('How much reduce the red power by?', 0.1);
         [expParameters.redChpow0AOm]  = GetWithDefault('How much reduce the red power by?', 0.4); %will see if this makes ir dec go away, and just show adjusted incr (since converted 8bit to 14bit),i will adjust after running on a subject if they see a difference 2/24/23
+        [expParameters.rasterCancelTF] = GetWithDefault('Raster canceld? 1--yes, 0--n', 1);
 %         [expParameters.redChpow]       = GetWithDefault('How much reduce the red power by?', 0.8);
 %         [expParameters.redChimgpow]    = GetWithDefault('How much power for imaging in red?', 0.5);    
     end
@@ -116,8 +117,8 @@ if use_params == 'n'
     expParameters.ntrialsPerGain  = 30;
     expParameters.nTrials         = expParameters.numRetContTotal*expParameters.ntrialsPerGain;
     [expParameters.difConStart]   = GetWithDefault('Starting diffusion constant:', 2940); %random walk starting speed (since speedTestStim to start is 5 pixels)
-    [expParameters.ppdX]          = GetWithDefault('ppd_x:', 301);
-    [expParameters.ppdY]          = GetWithDefault('ppd_y:', 301); %pixels per degree
+    [expParameters.ppdX]          = GetWithDefault('ppd_x:', 302);
+    [expParameters.ppdY]          = GetWithDefault('ppd_y:', 300); %pixels per degree
     
     % Experiment parameters -- STAIRCASE/QUEST 
     expParameters.staircaseType   = 'Quest';
@@ -699,13 +700,13 @@ while runExperiment == 1 % Experiment loop
             VideoParams.vidname = [expParameters.subjectID '_' sprintf('%03d',trialNum)];
             
             %update the ICANDI commands
-%             if expParameters.aosloFPS == 60
-%                 centerCommand = sprintf('LocUpdateAbs#%d#%d#', 256, 128);
-%                 netcomm('write',SYSPARAMS.netcommobj,int8(centerCommand));
-%             else
-%                 centerCommand = sprintf('LocUpdateAbs#%d#%d#', 256, 256);
-%                 netcomm('write',SYSPARAMS.netcommobj,int8(centerCommand));
-%             end
+            if expParameters.aosloFPS == 60
+                centerCommand = sprintf('LocUpdateAbs#%d#%d#', 256, 128);
+                netcomm('write',SYSPARAMS.netcommobj,int8(centerCommand));
+            else
+                centerCommand = sprintf('LocUpdateAbs#%d#%d#', 256, 256);
+                netcomm('write',SYSPARAMS.netcommobj,int8(centerCommand));
+            end
             
             sprintf('TrialNum = %#1f',trialNum)
             sprintf('Gain = %#1f',stim1Stim2order(row_gain, trialNum))
