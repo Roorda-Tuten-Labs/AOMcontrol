@@ -650,7 +650,7 @@ while runExperiment == 1 % Experiment loop
         end
         
     elseif gamePad.buttonA % Right STIM2 in ICANDI (JD start collecting input from subject)
-        if getResponse == 1
+        if getResponse == 1 && canRedo == 1
             lastResponse = 'right';
             Beeper(300, 1, 0.15)
             ansToWhichFaster = 2;
@@ -658,7 +658,7 @@ while runExperiment == 1 % Experiment loop
         end
         
     elseif gamePad.buttonY % Left STIM2 in ICANDI
-        if getResponse == 1
+        if getResponse == 1 && canRedo == 1
             lastResponse = 'left';
             Beeper(300, 1, 0.15)
             ansToWhichFaster = 1;
