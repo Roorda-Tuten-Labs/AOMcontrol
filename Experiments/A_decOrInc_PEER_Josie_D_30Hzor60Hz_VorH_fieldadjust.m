@@ -700,6 +700,9 @@ while runExperiment == 1 % Experiment loop
             VideoParams.vidname = [expParameters.subjectID '_' sprintf('%03d',trialNum)];
             
             %update the ICANDI commands
+            %I uncommented this since can't reset iwth it here, but may move
+            %this to be before the Mov is called, will test
+            %For horizontal this is okay, but will be an issue with Vertical 3/7/23
             if expParameters.aosloFPS == 60
                 centerCommand = sprintf('LocUpdateAbs#%d#%d#', 256, 128);
                 netcomm('write',SYSPARAMS.netcommobj,int8(centerCommand));
