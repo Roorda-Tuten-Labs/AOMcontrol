@@ -618,7 +618,7 @@ while runExperiment == 1 % Experiment loop
         end
 
     elseif gamePad.buttonA % STIM2 is faster
-        if getResponse == 1
+        if getResponse == 1 && canRedo == 1
             lastResponse = 'right'; %or down
             Beeper(300, 1, 0.15)
             ansToWhichFaster = 2;
@@ -626,7 +626,7 @@ while runExperiment == 1 % Experiment loop
         end
         
     elseif gamePad.buttonY % STIM1 is faster
-        if getResponse == 1
+        if getResponse == 1 && canRedo == 1
             lastResponse = 'left'; %or up
             Beeper(300, 1, 0.15)
             ansToWhichFaster = 1;
