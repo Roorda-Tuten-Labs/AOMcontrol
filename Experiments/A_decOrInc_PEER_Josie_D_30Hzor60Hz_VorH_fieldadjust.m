@@ -42,7 +42,7 @@ if use_params == 'n'
     [expParameters.expTypePeerOrVertical] = GetWithDefault('Peer_L/R (1) or Vertical_U/D experiment (0)?',1);
     
     if expParameters.aosloFPS == 60
-        [expParameters.doublingFieldTF] = GetWithDefault('Are you doubling the vertical field? 1--yes, 0--n', 1);
+        [expParameters.doublingFieldTF] = GetWithDefault('Are you doubling the vertical field? 1--yes, 0--n', 0);
         if expParameters.doublingFieldTF == 1
             [expParameters.field_Y_adjust] =1/2;
         elseif expParameters.doublingFieldTF == 0
@@ -62,7 +62,7 @@ if use_params == 'n'
     [expParameters.increment]         = GetWithDefault('Is stimulus increment? (1--increment, 0--decrement)', 1);
     
     if expParameters.increment == 1
-        [expParameters.redChpow]      = GetWithDefault('How much reduce the red power by?', 0.1);
+        [expParameters.redChpow]      = GetWithDefault('How much reduce the red power by?', 0.3);
         [expParameters.redChpow0AOm]  = GetWithDefault('How much reduce the red power by?', 0.4); %will see if this makes ir dec go away, and just show adjusted incr (since converted 8bit to 14bit),i will adjust after running on a subject if they see a difference 2/24/23
         [expParameters.rasterCancelTF] = GetWithDefault('Raster canceld? 1--yes, 0--n', 1);
 %         [expParameters.redChpow]       = GetWithDefault('How much reduce the red power by?', 0.8);
@@ -107,18 +107,22 @@ if use_params == 'n'
     [expParameters.fixCrossTrackingGain] = 0.002;
     [expParameters.Gain1]                = GetWithDefault('Gain of ref stimulus (first)', -1.5); %retina-contingent Stimulus (not RW)
     [expParameters.Gain2]                = GetWithDefault('Gain of ref stimulus (second)', 1.5); %retina-contingent Stimulus (not RW)
+    [expParameters.ntrialsGain1]  = 30;%maek sure even
+    [expParameters.ntrialsGain2]  = 30;%maek sure even
     
     if expParameters.numRetContTotal == 3
         [expParameters.Gain3]     = GetWithDefault('Gain of ref stimulus (third)', 0.002); %retina-contingent Stimulus (not RW)
+        [expParameters.ntrialsGain3] = 10; %maek sure even
+        [expParameters.nTrials]         = expParameters.ntrialsGain1+expParameters.ntrialsGain2+expParameters.ntrialsGain3;
+    else
+        [expParameters.nTrials]         = expParameters.ntrialsGain1+expParameters.ntrialsGain2;
     end
     
     expParameters.nChoices        = 2; %2AFC
     
-    expParameters.ntrialsPerGain  = 30;
-    expParameters.nTrials         = expParameters.numRetContTotal*expParameters.ntrialsPerGain;
     [expParameters.difConStart]   = GetWithDefault('Starting diffusion constant:', 2940); %random walk starting speed (since speedTestStim to start is 5 pixels)
-    [expParameters.ppdX]          = GetWithDefault('ppd_x:', 302);
-    [expParameters.ppdY]          = GetWithDefault('ppd_y:', 300); %pixels per degree
+    [expParameters.ppdX]          = GetWithDefault('ppd_x:', 303);
+    [expParameters.ppdY]          = GetWithDefault('ppd_y:', 306); %pixels per degree
     
     % Experiment parameters -- STAIRCASE/QUEST 
     expParameters.staircaseType   = 'Quest';
@@ -150,7 +154,6 @@ for n = 1:expParameters.numStaircases
     q(n,1) = QuestCreate(logGuessSpeed, expParameters.tGuessSd, ...
         expParameters.pThreshold, expParameters.beta, expParameters.delta, expParameters.gamma);
 end
-
 
 % Directory where the stimuli will be written and accessed by ICANDI
 % [rootDir, ~, ~] = fileparts(pwd);
@@ -279,10 +282,10 @@ else
     aom1seq         = ones(1,expParameters.videoDurationFrames);
     aom1pow         = ones(size(aom0seq));
 end
-aom1seq(1:endFrame) = frameIndexCircle;
 
 aom1offx            = zeros(size(aom0seq))+expParameters.stim1_offx;
 aom1offy            = zeros(size(aom0seq))+expParameters.stim1_offy; %up stim
+aom1gain            = expParameters.fixCrossTrackingGain*ones(size(aom0seq)); %since dummy trial
 
 %AOM2 (GREEN, typically) paramaters STIMULUS 2 Right
 if expParameters.increment == 1
@@ -292,21 +295,21 @@ else
     aom2seq         = ones(1,expParameters.videoDurationFrames);
     aom2pow         = ones(size(aom0seq));
 end
-aom2seq(1:endFrame) = frameIndexCircle;
 
 aom2offx            = zeros(size(aom0seq))+expParameters.stim2_offx;
 aom2offy            = zeros(size(aom0seq))+expParameters.stim2_offy; %down stim
+aom2gain            = expParameters.fixCrossTrackingGain*ones(size(aom0seq)); %since dummy trial
 
 % Generate the trials sequence
 testSequence = (1:1:expParameters.nTrials);
 
 %assigning variables
 %assigning variables
-questdifConVector = nan(expParameters.numRetContTotal, length(testSequence)/expParameters.numRetContTotal); %row 1 is FirstGain and row2 is SecondGain, etc
+questdifConVector      = nan(expParameters.numRetContTotal, expParameters.ntrialsGain1); %row 1 is FirstGain and row2 is SecondGain, etc
 questdifConVector(:,1) = expParameters.difConStart;
 
 %creating vector to track the actual diffusion constants tested , chosen from the options in 'true_diffusionConstants'
-difConVector = nan(expParameters.numRetContTotal, length(testSequence)/expParameters.numRetContTotal);
+difConVector = nan(size(questdifConVector));
 difConVector(:,1) = expParameters.difConStart;
 
 %defining rows for easier read
@@ -316,71 +319,29 @@ row_gain = 2;
 % row one defines which stimulus (either 1 or 2) goes on random walk, row two defines the gain of the retina-contingent stimulus
 stim1Stim2order = nan(2, expParameters.nTrials); 
 counter = 1;
-combine_rw_stim = [];
-
-for s = 1:expParameters.nChoices
-    cur_rwStim = s.*ones(1,expParameters.nTrials/(expParameters.numRetContTotal*expParameters.nChoices));
-    combine_rw_stim = [combine_rw_stim cur_rwStim];
-end
 
 for g = 1:expParameters.numRetContTotal
-    eachGain = strcat('expParameters.Gain', num2str(g)); 
-    gain_of_interest = eval(eachGain).*ones(1,expParameters.ntrialsPerGain);
+    combine_rw_stim = [];
+    for s = 1:expParameters.nChoices
+        numtrialgexp = strcat('expParameters.ntrialsGain', num2str(g)); 
+        numtrialg = eval(numtrialgexp);
+        cur_rwStim = s.*ones(1,numtrialg/expParameters.nChoices);
+        combine_rw_stim = [combine_rw_stim cur_rwStim];
+    end
     
-    stim1Stim2order(row_gain, counter: counter + (expParameters.ntrialsPerGain - 1)) = gain_of_interest;
-    stim1Stim2order(row_rw, counter: counter + (expParameters.ntrialsPerGain - 1)) = combine_rw_stim;
-    counter = counter + expParameters.ntrialsPerGain;
+    eachGain = strcat('expParameters.Gain', num2str(g)); 
+    gain_of_interest = eval(eachGain).*ones(1,numtrialg);
+    
+    stim1Stim2order(row_gain, counter: counter + (numtrialg - 1)) = gain_of_interest;
+    stim1Stim2order(row_rw, counter: counter + (numtrialg - 1)) = combine_rw_stim;
+    counter = counter + numtrialg;
+    
 end
 
 %shuffles the order of stim1 & stim2 by column that way the assigned speeds stay with
 %stim1 or stim2
 randomOrder = randperm(expParameters.nTrials);
 stim1Stim2order = stim1Stim2order(:, randomOrder);
-
-%initializing first difCon
-for g = 1 : expParameters.numRetContTotal 
-    if stim1Stim2order(row_gain,1) == eval(strcat('expParameters.Gain', num2str(g)))
-        difCon = questdifConVector(g,1);
-    end
-end
-
-[~, indexforclosestdifCon] = min(abs(true_diffusionConstants - difCon));
-
-rw10paths = rwpaths_given_trueDCs.(sprintf('dcIndex%d',indexforclosestdifCon));
-path_options = randperm(10);
-pathChoice = path_options(1);
-
-%IF Left/Top Stimulus (stim1), then left stimulus is moving rWGain and doing random walk
-if stim1Stim2order(1, 1) == 1
-    
-    aom1offx(startFrame:endFrame) = round(rw10paths(:,xColumn,pathChoice))+expParameters.stim1_offx;
-    aom1offy(startFrame:endFrame) = round(rw10paths(:,yColumn,pathChoice).*expParameters.field_Y_adjust)+expParameters.stim1_offy;
-    
-    %UPDATING THE GAINS SO THAT LEFT SIMULUS IS MOVING
-    % GainI#irval#rdval#grval# /*Set independent Stimulus gain to any value between -3.0 to 2.0 for each channel */
-    threeStimGaincommand = sprintf('GainI#%1.3f#%1.3f#%1.3f#',expParameters.fixCrossTrackingGain, expParameters.rWGain, stim1Stim2order(row_gain,1));
-    netcomm('write',SYSPARAMS.netcommobj, int8(threeStimGaincommand));
-    
-    aom1gain = expParameters.rWGain*ones(size(aom1seq));
-    aom2gain = stim1Stim2order(row_gain,1)*ones(size(aom2seq));
-    
-    pause(0.2);
-    
-    %otherwise Right/Down stimulus is moving rWGain and doing random walk
-else
-    aom2offx(startFrame:endFrame) = round(rw10paths(:,xColumn,pathChoice))+expParameters.stim2_offx;
-    aom2offy(startFrame:endFrame) = round(rw10paths(:,yColumn,pathChoice).*expParameters.field_Y_adjust)+expParameters.stim2_offy;
-    
-    %UPDATING GAINS SO THAT RIGHT STIMULUS IS MOVING
-    % GainI#irval#rdval#grval# /*Set independent Stimulus gain to any value between -3.0 to 2.0 for each channel */
-    threeStimGaincommand = sprintf('GainI#%1.3f#%1.3f#%1.3f#',expParameters.fixCrossTrackingGain, stim1Stim2order(row_gain,1), expParameters.rWGain);
-    netcomm('write',SYSPARAMS.netcommobj, int8(threeStimGaincommand));
-    
-    aom1gain = stim1Stim2order(row_gain,1)*ones(size(aom2seq));
-    aom2gain = expParameters.rWGain*ones(size(aom1seq));
-    
-    pause(0.2);
-end
 
 % Other stimulus sequence factors
 stimbeep = zeros(size(aom1seq)); % ICANDI will ding on every frame where this is set to "1"
@@ -429,7 +390,7 @@ Mov.suppress = 0;
 Mov.pfx = StimParams.fprefix;
 
 % Save responses
-responseVector = nan(expParameters.numRetContTotal, expParameters.ntrialsPerGain);
+responseVector = nan(expParameters.numRetContTotal, expParameters.ntrialsGain1);
 
 %in case trials need repeating, save to this array
 original_stim1stim2order = stim1Stim2order; %stim1stim2order is the original trial order, but if subject redos during exp, then the actual order is this one
@@ -472,7 +433,7 @@ updatestimCommand = ('Update#2#1#1#');
 netcomm('write',SYSPARAMS.netcommobj,int8(updatestimCommand));
 
 %creating counters
-trialNum = 1;
+trialNum = 0;
 first_n = 1;
 second_n = 1;
 if expParameters.numRetContTotal == 3
@@ -502,37 +463,45 @@ while runExperiment == 1 % Experiment loop
             if  presentStimulus == 1
                 if ~strcmp(lastResponse, 'redo') % if the response is NOT redo then log the most recent button press, then play stimulus sequence
                     
-                    if ansToWhichFaster == stim1Stim2order(row_rw, trialNum)
-                        randWalkfaster = 1;
+                    if trialNum == 0
+                        aom1seq(1:endFrame) = frameIndexCircle;
+                        aom2seq(1:endFrame) = frameIndexCircle;  
+                        
+                        Mov.aom1seq   = aom1seq;
+                        Mov.aom2seq   = aom2seq;
                     else
-                        randWalkfaster = 0;
+                        if ansToWhichFaster == stim1Stim2order(row_rw, trialNum)
+                            randWalkfaster = 1;
+                        else
+                            randWalkfaster = 0;
+                        end
+                        
+                        % Update the Quest structure if it is a staircase trial
+                        if stim1Stim2order(row_gain,trialNum) == expParameters.Gain1
+                            responseVector(1,first_n) = ansToWhichFaster;
+                            first_n = first_n+1;
+                            [logSpeedTestStim] = dcToLogspeedteststim(difCon, expParameters.aosloFPS);
+                            
+                            %q=QuestUpdate(q,intensity,response)
+                            %then you call QuestUpdate to report to Quest the actual intensity used and whether the observer got it right.
+                            q(1,1) = QuestUpdate(q(1,1), logSpeedTestStim, randWalkfaster);
+                        elseif stim1Stim2order(row_gain,trialNum) == expParameters.Gain2
+                            responseVector(2,second_n) = ansToWhichFaster;
+                            second_n = second_n+1;
+                            [logSpeedTestStim] = dcToLogspeedteststim(difCon, expParameters.aosloFPS);
+                            
+                            q(2,1) = QuestUpdate(q(2,1), logSpeedTestStim, randWalkfaster);
+                        else
+                            responseVector(3, third_n) = ansToWhichFaster;
+                            third_n = third_n+1;
+                            [logSpeedTestStim] = dcToLogspeedteststim(difCon, expParameters.aosloFPS);
+                            
+                            q(3,1) = QuestUpdate(q(3,1), logSpeedTestStim, randWalkfaster);
+                        end
+                        
+                        %save data
+                        save(dataFile, 'q', 'expParameters', 'stim1Stim2order', 'testSequence', 'responseVector', 'questdifConVector', 'difConVector');
                     end
-                    
-                    % Update the Quest structure if it is a staircase trial
-                    if stim1Stim2order(row_gain,trialNum) == expParameters.Gain1
-                        responseVector(1,first_n) = ansToWhichFaster;
-                        first_n = first_n+1;
-                        [logSpeedTestStim] = dcToLogspeedteststim(difCon, expParameters.aosloFPS);
-                        
-                        %q=QuestUpdate(q,intensity,response)
-                        %then you call QuestUpdate to report to Quest the actual intensity used and whether the observer got it right.
-                        q(1,1) = QuestUpdate(q(1,1), logSpeedTestStim, randWalkfaster);
-                    elseif stim1Stim2order(row_gain,trialNum) == expParameters.Gain2
-                        responseVector(2,second_n) = ansToWhichFaster;
-                        second_n = second_n+1;
-                        [logSpeedTestStim] = dcToLogspeedteststim(difCon, expParameters.aosloFPS);
-                        
-                        q(2,1) = QuestUpdate(q(2,1), logSpeedTestStim, randWalkfaster);
-                    else
-                        responseVector(3, third_n) = ansToWhichFaster;
-                        third_n = third_n+1;
-                        [logSpeedTestStim] = dcToLogspeedteststim(difCon, expParameters.aosloFPS);
-                        
-                        q(3,1) = QuestUpdate(q(3,1), logSpeedTestStim, randWalkfaster);
-                    end
-                    
-                    %save data
-                    save(dataFile, 'q', 'expParameters', 'stim1Stim2order', 'testSequence', 'responseVector', 'questdifConVector', 'difConVector');
                 end
                 trialNum = trialNum+1;
                 
@@ -552,11 +521,13 @@ while runExperiment == 1 % Experiment loop
                     %plotting all data
                     figure
                     for stair = 1 : expParameters.numStaircases
+                        numtrialgexp = strcat('expParameters.ntrialsGain', num2str(stair)); 
+                        numtrialg = eval(numtrialgexp);
                         subplot(1,expParameters.numStaircases,stair,'nextplot','add')
-                        plot(1: size(difConVectorArcmin,2) ,difConVectorArcmin(stair, :), 'o')
+                        plot(1: numtrialg ,difConVectorArcmin(stair, 1:numtrialg), 'o')
                         hold on
                         
-                        for n = 1: size(difConVectorArcmin,2)-1
+                        for n = 1: numtrialg-1
                             if difConVectorArcmin(stair,n)< difConVectorArcmin(stair,n+1)
                                 p1 = plot(n: n+1,difConVectorArcmin(stair, (n: n+1)), 'r-o', 'LineWidth', 1, 'MarkerSize', 4, 'MarkerFaceColor', 'r') ;
                                 hold on
@@ -573,10 +544,10 @@ while runExperiment == 1 % Experiment loop
                         ylabel('Diffusion Constant (arcmin^2/sec)','FontSize',20);
                         title(sprintf('Gain %1.1f', eval(strcat('expParameters.Gain', num2str(stair)))));
                         xlabel('Trial Number','FontSize',20);
-                        set(gca,'xlim',[1 size(difConVectorArcmin,2)]);
+                        set(gca,'xlim',[1 numtrialg]);
                         set(gca,'ylim',[0 max(difConVectorArcmin(stair,:)) + 1]);
                         set(gca,'FontSize',15)
-                        text(20, difConVectorArcmin(stair, expParameters.ntrialsPerGain)+3, sprintf('Pt Equal = %1.3f', difConVectorArcmin(stair, expParameters.ntrialsPerGain)));
+                        text(20, difConVectorArcmin(stair, numtrialg)+3, sprintf('Pt Equal = %1.3f', difConVectorArcmin(stair, numtrialg)));
                         
                         if exist('p1','var') == 1 && exist('p2','var') == 1
                             legend([p1 p2],{'RWslower','RWfaster'})
@@ -692,13 +663,23 @@ while runExperiment == 1 % Experiment loop
         
         % Show the stimulus
         if presentStimulus == 1
-            
-            % Call Play Movie
-            Mov.msg = ['Diffusion constant is: ' num2str(true_diffusionConstants(indexforclosestdifCon)) ...
-                '; Trial ' num2str(trialNum) ' of ' num2str(length(testSequence))];
-            setappdata(hAomControl, 'Mov',Mov);
-            VideoParams.vidname = [expParameters.subjectID '_' sprintf('%03d',trialNum)];
-            
+            if trialNum == 0
+                 % Call Play Movie
+                Mov.msg = ['This is a dummy trial to get fixation cross'];
+                setappdata(hAomControl, 'Mov',Mov);
+                VideoParams.vidname = [expParameters.subjectID '_' sprintf('%03d',1)];
+            else
+                % Call Play Movie
+                Mov.msg = ['Diffusion constant is: ' num2str(true_diffusionConstants(indexforclosestdifCon)) ...
+                    '; Trial ' num2str(trialNum) ' of ' num2str(length(testSequence))];
+                setappdata(hAomControl, 'Mov',Mov);
+                VideoParams.vidname = [expParameters.subjectID '_' sprintf('%03d',trialNum)];
+                
+                sprintf('TrialNum = %#1f',trialNum)
+                sprintf('Gain = %#1f',stim1Stim2order(row_gain, trialNum))
+                sprintf('RWstim = %#1f',stim1Stim2order(row_rw, trialNum))
+                sprintf('DifCon = %f',true_diffusionConstants(indexforclosestdifCon))  
+            end
             %update the ICANDI commands
             %I uncommented this since can't reset iwth it here, but may move
             %this to be before the Mov is called, will test
@@ -710,12 +691,6 @@ while runExperiment == 1 % Experiment loop
                 centerCommand = sprintf('LocUpdateAbs#%d#%d#', 256, 256);
                 netcomm('write',SYSPARAMS.netcommobj,int8(centerCommand));
             end
-            
-            sprintf('TrialNum = %#1f',trialNum)
-            sprintf('Gain = %#1f',stim1Stim2order(row_gain, trialNum))
-            sprintf('RWstim = %#1f',stim1Stim2order(row_rw, trialNum))
-            sprintf('DifCon = %f',true_diffusionConstants(indexforclosestdifCon))
-            
             PlayMovie;
             
             getResponse = 1; % set getResponse to 1 (it will remain at 1 after the first trial)
@@ -723,7 +698,7 @@ while runExperiment == 1 % Experiment loop
         end
         
     elseif gamePad.(sprintf('button%s',stim2)) %gamePad.buttonB % Right STIM2 in ICANDI 
-        if getResponse == 1  && canRedo == 1
+        if getResponse == 1  && canRedo == 1 
             lastResponse = 'right'; %or down
             Beeper(300, 1, 0.15)
             ansToWhichFaster = 2;
@@ -739,7 +714,7 @@ while runExperiment == 1 % Experiment loop
         end
         
     elseif gamePad.buttonRightUpperTrigger || gamePad.buttonRightLowerTrigger %gamePad.buttonStart %redo button
-        if getResponse == 1 && canRedo == 1
+        if getResponse == 1 && canRedo == 1 && trialNum ~= 0
             lastResponse = 'redo';
             Speak('Re do');
             presentStimulus = 1;
