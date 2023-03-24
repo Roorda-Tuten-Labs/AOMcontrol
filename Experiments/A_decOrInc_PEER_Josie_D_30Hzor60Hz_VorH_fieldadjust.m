@@ -42,7 +42,7 @@ if use_params == 'n'
     [expParameters.expTypePeerOrVertical] = GetWithDefault('Peer_L/R (1) or Vertical_U/D experiment (0)?',1);
     
     if expParameters.aosloFPS == 60
-        [expParameters.doublingFieldTF] = GetWithDefault('Are you doubling the vertical field? 1--yes, 0--n', 0);
+        [expParameters.doublingFieldTF] = GetWithDefault('Are you doubling the vertical field? 1--yes, 0--n', 1);
         if expParameters.doublingFieldTF == 1
             [expParameters.field_Y_adjust] =1/2;
         elseif expParameters.doublingFieldTF == 0
@@ -59,7 +59,7 @@ if use_params == 'n'
     expParameters.videoDurationFrames = round(expParameters.aosloFPS*(expParameters.videoDurationMsec/1000)); % Convert to frames
     expParameters.record              = 1; 
     
-    [expParameters.increment]         = GetWithDefault('Is stimulus increment? (1--increment, 0--decrement)', 1);
+    [expParameters.increment]         = GetWithDefault('Is stimulus increment? (1--increment, 0--decrement)', 0);
     
     if expParameters.increment == 1
         [expParameters.redChpow]      = GetWithDefault('How much reduce the red power by?', 0.3);
@@ -121,8 +121,8 @@ if use_params == 'n'
     expParameters.nChoices        = 2; %2AFC
     
     [expParameters.difConStart]   = GetWithDefault('Starting diffusion constant:', 2940); %random walk starting speed (since speedTestStim to start is 5 pixels)
-    [expParameters.ppdX]          = GetWithDefault('ppd_x:', 303);
-    [expParameters.ppdY]          = GetWithDefault('ppd_y:', 306); %pixels per degree
+    [expParameters.ppdX]          = GetWithDefault('ppd_x:', 302);
+    [expParameters.ppdY]          = GetWithDefault('ppd_y:', 294); %pixels per degree
     
     % Experiment parameters -- STAIRCASE/QUEST 
     expParameters.staircaseType   = 'Quest';
