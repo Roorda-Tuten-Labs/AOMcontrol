@@ -39,7 +39,7 @@ if use_params == 'n'
     [expParameters.aosloFPS] = GetWithDefault('Is this 30Hz or 60Hz exp?', 60); %UCB frame rate, in Hz fast scanner is 16kHz. Slow scanner is 30Hz. Discrete stim at dif time points gives illusion that motion: Strobascopic display properties
     
     if expParameters.aosloFPS == 60
-        [expParameters.doublingFieldTF] = GetWithDefault('Are you doubling the vertical field? 1--yes, 0--n', 0);
+        [expParameters.doublingFieldTF] = GetWithDefault('Are you doubling the vertical field? 1--yes, 0--n', 1);
         if expParameters.doublingFieldTF == 1
             [expParameters.field_Y_adjust] = 1/2;
         elseif expParameters.doublingFieldTF == 0
@@ -81,8 +81,8 @@ if use_params == 'n'
     
     expParameters.nIntervals          = 2;
     [expParameters.difConStart]       = GetWithDefault('Starting diffusion constant:', 2940); %random walk starting speed
-    [expParameters.ppdX]              = GetWithDefault('ppd_x:', 303);
-    [expParameters.ppdY]              = GetWithDefault('ppd_y:', 306); %pixels per degree
+    [expParameters.ppdX]              = GetWithDefault('ppd_x:', 304);
+    [expParameters.ppdY]              = GetWithDefault('ppd_y:', 298); %pixels per degree
     
     % Experiment parameters -- STAIRCASE/QUEST
     expParameters.staircaseType   = 'Quest';
@@ -471,7 +471,7 @@ while runExperiment == 1 % Experiment loop
                         ylabel('Diffusion Constant (arcmin^2/sec)','FontSize',20);
                         title(sprintf('Gain %1.1f', eval(strcat('expParameters.Gain', num2str(stair)))));
                         xlabel('Trial Number','FontSize',20);
-                        set(gca,'xlim',[1 size(difConVectorArcmin,2)]);
+                        set(gca,'xlim',[1 numtrialg]);
                         set(gca,'ylim',[0 max(difConVectorArcmin(stair,:)) + 1]);
                         set(gca,'FontSize',15)
                         text(20, difConVectorArcmin(stair, numtrialg)+3, sprintf('Pt Equal = %1.3f', difConVectorArcmin(stair, numtrialg)));
