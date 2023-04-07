@@ -81,8 +81,8 @@ if use_params == 'n'
     
     expParameters.nIntervals          = 2;
     [expParameters.difConStart]       = GetWithDefault('Starting diffusion constant:', 2940); %random walk starting speed
-    [expParameters.ppdX]              = GetWithDefault('ppd_x:', 304);
-    [expParameters.ppdY]              = GetWithDefault('ppd_y:', 298); %pixels per degree
+    [expParameters.ppdX]              = GetWithDefault('ppd_x:', 300);
+    [expParameters.ppdY]              = GetWithDefault('ppd_y:', 300); %pixels per degree
     
     % Experiment parameters -- STAIRCASE/QUEST
     expParameters.staircaseType   = 'Quest';
