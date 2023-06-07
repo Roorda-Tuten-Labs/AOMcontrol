@@ -40,7 +40,8 @@ function [speedTestStim_vector, true_diffusionConstants, rwpaths_given_trueDCs, 
 
     %set up speedTestStim
     speedTestStimMax = sqrt((maxDifCon/(2*aosloFPS)));
-    pieces = 20*speedTestStimMax; %so that it goes in increments of 0.05 
+%     pieces = 20*speedTestStimMax; %so that it goes in increments of 0.05
+    pieces = 10*speedTestStimMax; %so that it goes in increments of 0.1
     speedTestStim_vector = linspace(0,speedTestStimMax, pieces+ 1);
 
     %number of goodRW's to keep per DC/speedTestStim
