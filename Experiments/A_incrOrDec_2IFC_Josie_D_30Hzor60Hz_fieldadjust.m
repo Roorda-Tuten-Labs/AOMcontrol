@@ -81,7 +81,7 @@ if use_params == 'n'
     
     expParameters.nIntervals          = 2;
     [expParameters.difConStart]       = GetWithDefault('Starting diffusion constant:', 2940); %random walk starting speed
-    [expParameters.ppdX]              = GetWithDefault('ppd_x:', 300);
+    [expParameters.ppdX]              = GetWithDefault('ppd_x:', 298);
     [expParameters.ppdY]              = GetWithDefault('ppd_y:', 300); %pixels per degree
     
     % Experiment parameters -- STAIRCASE/QUEST
@@ -179,6 +179,7 @@ end
 frameIndexFix_off = 2; %The index of the fixation cross stimulus bitmap
 frameIndexFix_on = 3; %The index of the fixation cross stimulus bitmap
 frameIndexCircle = 4; % The index of the stimulus bitmap
+frameIndexDummy = 5;
 
 % Place stimulus startframe and endframe
 startFramestim1 = 1;
@@ -335,12 +336,15 @@ circleDiam = ecc_diam(2, find(ecc_diam(1,:) == expParameters.eccentricity));
 %if increment, it's ones and adjusted by redchannel power
 if expParameters.increment == 1
     circleStim = double(Circle(round(circleDiam/2)))*expParameters.redChpow;
+    dummystim = zeros(circleDiam,circleDiam);
 elseif expParameters.increment == 0 %if decrement
     circleStim = 1-double(Circle(round(circleDiam/2)));
+    dummystim = ones(circleDiam,circleDiam);
 end
 
 if expParameters.field_Y_adjust == 0.5
     circleStim(2:2:circleDiam,:) = [];
+    dummystim(2:2:circleDiam,:) = [];
 end
 
 % fixCross = ones(5,5);
@@ -349,6 +353,7 @@ fixCross_on = ones(15,15);
 
 % Save as a .bmp
 imwrite(circleStim, [expParameters.stimpath 'frame' num2str(frameIndexCircle) '.bmp']);
+imwrite(dummystim, [expParameters.stimpath 'frame' num2str(frameIndexDummy) '.bmp']);
 imwrite(fixCross_off, [expParameters.stimpath 'frame' num2str(frameIndexFix_off) '.bmp']);
 imwrite(fixCross_on, [expParameters.stimpath 'frame' num2str(frameIndexFix_on) '.bmp']);
 
@@ -394,6 +399,7 @@ while runExperiment == 1 % Experiment loop
                         
                         aom1seq(startFramestim1:endFramestim1) = frameIndexCircle;
                         aom1seq(startFramestim2:endFramestim2) = frameIndexCircle;
+                        aom1seq(endFramestim2+1:end) = frameIndexDummy;
                         
                         Mov.aom0seq   = aom0seq;
                         Mov.aom1seq   = aom1seq;
