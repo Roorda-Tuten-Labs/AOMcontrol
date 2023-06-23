@@ -425,7 +425,7 @@ if dirname == 0;
 else
     %do nothing
 end
-StimParams.stimpath = fullfile(dirname);
+StimParams.stimpath = [fullfile(dirname) filesep];
 
 Parse_Load_Buffers(1);
 [seqfname, seqpname,filterindex] = uigetfile('*.SEQ;*.seq', 'Select the sequence file');

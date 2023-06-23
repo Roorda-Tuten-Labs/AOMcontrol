@@ -11,20 +11,22 @@ hAomControl = getappdata(0,'hAomControl');
 Mov = getappdata(hAomControl, 'Mov');
 setappdata(hAomControl,'handles',handles);
 
-SYSPARAMS.PupilDuration=(Mov.duration*1/30)+etime(clock,[2000 1 1 0 0 0]);                %%cmp
-SYSPARAMS.PupilSavingPath=[VideoParams.videofolder,VideoParams.vidprefix,'\']; 
+if SYSPARAMS.sysmode == 3
+    SYSPARAMS.PupilDuration=(Mov.duration*1/30)+etime(clock,[2000 1 1 0 0 0]);                %%cmp
+    SYSPARAMS.PupilSavingPath=[VideoParams.videofolder,VideoParams.vidprefix,'\']; 
 
-if SYSPARAMS.PupilTCACorrection==1,                                                       %%cmp
-    if ~(SYSPARAMS.PupilTCAx==-10000),                                                      %%cmp
-        CFG = getappdata(hAomControl, 'CFG');                                             %%cmp
-        PupilOffsetpix_x=CFG.pixperdeg*SYSPARAMS.PupilTCAx/60;                            %%cmp
-        PupilOffsetpix_y=CFG.pixperdeg*SYSPARAMS.PupilTCAy/60;                            %%cmp
-    else                                                                                  %%cmp
-        sound(rand(500,1),800);                                                           %%cmp
-        PupilOffsetpix_x=0;                                                               %%cmp
-        PupilOffsetpix_y=0;                                                               %%cmp
-    end                                                                                   %%cmp
-end                                                                                       %%cmp
+    if SYSPARAMS.PupilTCACorrection==1,                                                       %%cmp
+        if ~(SYSPARAMS.PupilTCAx==-10000),                                                      %%cmp
+            CFG = getappdata(hAomControl, 'CFG');                                             %%cmp
+            PupilOffsetpix_x=CFG.pixperdeg*SYSPARAMS.PupilTCAx/60;                            %%cmp
+            PupilOffsetpix_y=CFG.pixperdeg*SYSPARAMS.PupilTCAy/60;                            %%cmp
+        else                                                                                  %%cmp
+            sound(rand(500,1),800);                                                           %%cmp
+            PupilOffsetpix_x=0;                                                               %%cmp
+            PupilOffsetpix_y=0;                                                               %%cmp
+        end                                                                                   %%cmp
+    end
+end
  
 if SYSPARAMS.sysmode == 2 || SYSPARAMS.sysmode == 3
     if ~isempty(Mov.seq) && ischar(Mov.seq)
@@ -208,8 +210,10 @@ setappdata(hAomControl, 'Mov', Mov);
 
 t=timerfindall;
 delete(t);
-movietimer = timer('TimerFcn', @Movie_Timer_Fcn,'StartFcn', @Start_Movie_Timer_Fcn,'StopFcn', @Stop_Movie_Timer_Fcn,'Period', .034, 'ExecutionMode', 'fixedRate', 'TasksToExecute', Mov.duration);
-start(movietimer);
+if ((size(Mov.seq,2) <= VideoParams.videodur*30) && SYSPARAMS.sysmode == 3)
+    movietimer = timer('TimerFcn', @Movie_Timer_Fcn,'StartFcn', @Start_Movie_Timer_Fcn,'StopFcn', @Stop_Movie_Timer_Fcn,'Period', .034, 'ExecutionMode', 'fixedRate', 'TasksToExecute', Mov.duration);
+    start(movietimer);
+end
 
 function Movie_Timer_Fcn(hObject, eventdata, handles)
 global SYSPARAMS StimParams CurFrame;
@@ -218,7 +222,7 @@ hAomControl = getappdata(0,'hAomControl');
 Mov = getappdata(hAomControl, 'Mov');
 handles = getappdata(hAomControl, 'handles');
 
-if Mov.frm == Mov.duration;
+if Mov.frm == Mov.duration
     Mov.frm = 2;
 else
     Mov.frm = Mov.frm+1;
