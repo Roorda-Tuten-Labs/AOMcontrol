@@ -1,12 +1,15 @@
-function Mov = generate_mov(CFG,trial_dur)
+function Mov = generate_mov(CFG,trial_dur,fps)
 
     if nargin < 2
         trial_dur = 30; % in frames, default is 30 frames (1 sec)
+        fps = 30;
+    end
+
+    if nargin < 3
+        fps = 30;
     end
 
     startframe = 3;
-    fps = 30;
-
     
     % CFG.presentdur in msec
     presentdur = CFG.presentdur / 1000; 
