@@ -90,7 +90,7 @@ function Mov = generate_mov(CFG,trial_dur,fps)
     stimbeep(startframe+stimdur-1) = 1;
 
     % ------ Set up movie parameters ------ %
-    Mov.duration = CFG.videodur*fps;
+    Mov.duration = CFG.videodur*fps; % is called "trialdur" in Flicker_xfer, which causes Ally to have to set Mov.duration to trial_length in line 74
 
     Mov.aom0seq = aom0seq;
     Mov.aom0pow = aom0pow;
