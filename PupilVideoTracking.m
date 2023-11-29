@@ -22,7 +22,7 @@ function varargout = PupilVideoTracking(varargin)
 
 % Edit the above text to modify the response to help PupilVideoTrackingF
 
-% Last Modified by GUIDE v2.5 16-Sep-2016 17:00:54
+% Last Modified by GUIDE v2.5 16-Sep-       222122222016 17:00:54
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -125,6 +125,7 @@ SetCameraSetting(handles,CameraSetting)
 % global IndexTot;
 % IndexTot=1;
 % %FN='C:\Claudio\MiscFromLab\AOSLO\AOMcontrol_V3_2\EyeTrack\Video_Folder\cmp2.avi';
+% interest area ^
 % FN='C:\Documents and Settings\aosloii_ao\Desktop\PupilTracker\cmp2.avi';
 %
 % xyloObj = VideoReader(FN);
@@ -157,7 +158,6 @@ function pushbutton1_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 global SYSPARAMS PupilParam;
-SYSPARAMS.PupilTracker=0;
 DateString = datestr(clock); Spaceidx=findstr(DateString,' '); DateString(Spaceidx)='_'; Spaceidx=findstr(DateString,':'); DateString(Spaceidx)='_';
 Prefix=get(handles.edit3,'String');
 if isfield(PupilParam,'DataSync'),
@@ -183,6 +183,8 @@ PupilParam.Flag=0;
 if  get(hObject,'UserData')==0,
     
     vid= videoinput('tisimaq_r2013_64', 1,CameraSetting.VideoFormat);
+
+
     %vid= videoinput('winvideo', 1,'RG16_1216x1024'); % new camera AOSLO lab
     %vid= videoinput('winvideo', 1,'RGB24_2448x2048'); % new camera AOSLO lab
     %vid= videoinput('winvideo', 2,'RG16_1216x1024'); % new camera laptop
@@ -208,14 +210,10 @@ if  get(hObject,'UserData')==0,
     axes(handles.axes1);
     pause(2)
     hold on
-    src_obj = getselectedsource(vid); PupilParam.Camerafps= get(src_obj,'FrameRate');
+    src_obj = getselectedsource(vid); 
+    PupilParam.Camerafps= get(src_obj,'FrameRate');
     %**************************************************%
     %********* settings camera variables **************%
-    %PupilParam.ShowReference=0;
-    %PupilParam.l1=plot(1,1);
-    %PupilParam.l2=plot(1,1);
-    %PupilParam.l11=plot(1,1);
-    %PupilParam.l22=plot(1,1);
     PupilParam.l3=plot(1,1);
     PupilParam.l4=plot(1,1);
     PupilParam.l5=plot(1,1);
@@ -223,8 +221,6 @@ if  get(hObject,'UserData')==0,
     PupilParam.l7=plot(1,1);
     PupilParam.l8=plot(1,1);
     PupilParam.p1=plot(1,1);
-    %PupilParam.p2=plot(1,1);
-    %PupilParam.p3=plot(1,1);
     
     PupilParam.v1=plot(1,1);
     PupilParam.v2=plot(1,1);
@@ -267,15 +263,19 @@ if  get(hObject,'UserData')==0,
     SetCameraValues(vid,CameraSetting);
 end
 if  get(hObject,'UserData')==1,
+    %close and stop
     closepreview(vid);
     
     delete(vid); vid=videoinput('tisimaq_r2013_64', 1); delete(vid); 
     PupilParam.Video=0;
     Prefix=get(handles.edit3,'String');
+    %rename buttoms
     set(handles.pushbutton5,'String','Save Video');
     set(handles.pushbutton5,'BackgroundColor',[0.941176 0.941176 0.941176]); set(handles.pushbutton5,'ForegroundColor',[0 0 0]);
-    set(handles.pushbutton9,'String','Sync Save'); set(handles.pushbutton9,'BackgroundColor',[0.941176 0.941176 0.941176]); set(handles.pushbutton9,'ForegroundColor',[0 0 0]);  PupilParam.Sync=0;
+    set(handles.pushbutton9,'String','Sync Save'); set(handles.pushbutton9,'BackgroundColor',[0.941176 0.941176 0.941176]); set(handles.pushbutton9,'ForegroundColor',[0 0 0]); 
+    PupilParam.Sync=0;
     Prefix=get(handles.edit3,'String');
+    % save pupil data
     PupilData=PupilParam.DataSync;
     DateString = datestr(clock); Spaceidx=findstr(DateString,' '); DateString(Spaceidx)='_'; Spaceidx=findstr(DateString,':'); DateString(Spaceidx)='_';
     if ~isempty(PupilParam.DataSync), save(['.\VideoAndRef\','Trial_DataPupil_',Prefix,'_',DateString], 'PupilData'); end
@@ -391,7 +391,7 @@ else
         save(['.\VideoAndRef\',Prefix,'VideoPupil_',DateString], 'VideoToSave')
         VideoToSave=[];
         
-        %set(handles.pushbutton9,'String','Sync Save'); set(handles.pushbutton9,'BackgroundColor',[0.941176 0.941176 0.941176]); set(handles.pushbutton9,'ForegroundColor',[0 0 0]); PupilParam.Sync=0;
+        %set(handles.pushbutton9,'String','Sync Save'); set(handles.pushbutton9,'BackgroundColor',[0.941176 0.941176 0.941176]); set(handles.pushbutton9,'ForegroundColor',[0 0 0]); 
         
         if PupilParam.PTFlag==1
             PupilParam.PTFlag=0;
@@ -494,8 +494,13 @@ if PupilParam.Video==1 & PupilParam.PTFlag==0,
     set(hObject,'BackgroundColor',[0.75 0 0]); set(hObject,'ForegroundColor',[1 1 1])
     Block_fps=clock;
     PupilParam.PTData=[0 0 0 0 0 Block_fps];
-    % marks the video frame when the subject responds.
-    netcomm('write',SYSPARAMS.netcommobj,int8('MarkFrame#'));
+    
+    if SYSPARAMS.board == 'm'
+        MATLABAomControl32('MarkFrame#');
+    else
+        % marks the video frame when the subject responds.
+        netcomm('write',SYSPARAMS.netcommobj,int8('MarkFrame#'));
+    end
 else
     %set(handles.pushbutton9,'String','Sync Save'); set(handles.pushbutton9,'BackgroundColor',[0.941176 0.941176 0.941176]); set(handles.pushbutton9,'ForegroundColor',[0 0 0]); PupilParam.Sync=0;
     
@@ -535,7 +540,7 @@ if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgr
 end
 
 
-% --- Executes on button press in pushbutton9.
+% % --- Executes on button press in pushbutton9.
 function pushbutton9_Callback(hObject, eventdata, handles)
 % hObject    handle to pushbutton9 (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
@@ -896,11 +901,15 @@ else
     
     if SYSPARAMS.realsystem == 1
         % AEB changed aligncommand on 5/30/2017
-        % removes the TCA-pupil correction from the aom offsets
+        % removes the TCA-pupil correction from the x offsets
         global StimParams
-        aligncommand = ['UpdateTCA#' num2str(StimParams.aomTCA(1, 1)) '#' num2str(StimParams.aomTCA(1, 2)) '#' num2str(StimParams.aomTCA(2, 1)) '#' num2str(StimParams.aomTCA(2, 2)) '#' num2str(StimParams.aomTCA(3, 1)) '#' num2str(StimParams.aomTCA(3, 2)) '#'];   %#ok<NASGU>
-        %aligncommand = ['UpdateTCA#' num2str(0) '#' num2str(0) '#' num2str(0) '#' num2str(0) '#' num2str(0) '#' num2str(0) '#'];   %#ok<NASGU>
-        netcomm('write',SYSPARAMS.netcommobj,int8(aligncommand));
+        aligncommand = ['UpdateOffset#' num2str(StimParams.aomoffs(1, 1)) '#' num2str(StimParams.aomoffs(1, 2)) '#' num2str(StimParams.aomoffs(2, 1)) '#' num2str(StimParams.aomoffs(2, 2)) '#' num2str(StimParams.aomoffs(3, 1)) '#' num2str(StimParams.aomoffs(3, 2)) '#'];   %#ok<NASGU>
+        %aligncommand = ['UpdateOffset#' num2str(0) '#' num2str(0) '#' num2str(0) '#' num2str(0) '#' num2str(0) '#' num2str(0) '#'];   %#ok<NASGU>
+        if SYSPARAMS.board == 'm'
+            MATLABAomControl32(aligncommand);
+        else
+            netcomm('write',SYSPARAMS.netcommobj,int8(aligncommand));
+        end
     end
     PupilParam.EnableTCAComp=0;
     
@@ -943,7 +952,7 @@ if  get(handles.pushbutton2,'UserData')==1,
         CameraSetting.ROI=[96+256 0+256 1120-256 1024-256];
         PupilParam.AvoidedBorder=round(CameraSetting.ROI(3)/5.1);
     else
-        set(hObject,'String','Zoom In');
+        set(hObject,'String','Zoom In');   
         %CameraSetting.ROI=[128 0 768 768];
         CameraSetting.ROI=[96 0 1120 1024];
         PupilParam.AvoidedBorder=round(CameraSetting.ROI(3)/5.1);
@@ -969,7 +978,6 @@ if  get(handles.pushbutton2,'UserData')==1,
     %         ((CameraSetting.ROI(4)-CameraSetting.ROI(2))) 1]);
     %
     %     set(handles.axes1,'CameraTargetMode','manual')
-    %setappdata(h,'UpdatePreviewWindowFcn',@PupilTrackingAlg);
     vid= videoinput('tisimaq_r2013_64', 1,CameraSetting.VideoFormat); % new camera AOSLO l
     %vid= videoinput('winvideo', 1,'RGB24_1024x768');
     preview(vid,h);
@@ -982,10 +990,7 @@ if  get(handles.pushbutton2,'UserData')==1,
     %**************************************************%
     %********* settings camera variables **************%
     %PupilParam.ShowReference=0;
-    %PupilParam.l1=plot(1,1);
-    %PupilParam.l2=plot(1,1);
-    %PupilParam.l11=plot(1,1);
-    %PupilParam.l22=plot(1,1);
+
     PupilParam.l3=plot(1,1);
     PupilParam.l4=plot(1,1);
     PupilParam.l5=plot(1,1);
@@ -993,8 +998,6 @@ if  get(handles.pushbutton2,'UserData')==1,
     PupilParam.l7=plot(1,1);
     PupilParam.l8=plot(1,1);
     PupilParam.p1=plot(1,1);
-    %PupilParam.p2=plot(1,1);
-    %PupilParam.p3=plot(1,1);
     
     PupilParam.v1=plot(1,1);
     PupilParam.v2=plot(1,1);
@@ -1141,7 +1144,6 @@ function figure1_CloseRequestFcn(hObject, eventdata, handles)
 
 % Hint: delete(hObject) closes the figure
 global SYSPARAMS PupilParam
-SYSPARAMS.PupilTracker=0;
 DateString = datestr(clock); Spaceidx=findstr(DateString,' '); DateString(Spaceidx)='_'; Spaceidx=findstr(DateString,':'); DateString(Spaceidx)='_';
 Prefix=get(handles.edit3,'String');
 if isfield(PupilParam,'DataSync')

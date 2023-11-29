@@ -1,4 +1,4 @@
-%hwInfo = imaqhwinfo('winvideo',1); % get info and formats
+            %hwInfo = imaqhwinfo('winvideo',1); % get info and formats
 %obj=videoinput('winvideo', 3,'RGB24_1024x768');
 %obj= videoinput('winvideo', 1,'RG16_1216x1024');
 obj= videoinput('winvideo', 1,'RGB24_2448x2048');

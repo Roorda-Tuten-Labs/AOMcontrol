@@ -1,6 +1,6 @@
 clear all
 close all
-start_path='C:\Programs\AOMcontrol_V3_2_cleaned\VideoAndRef';
+start_path='C:\Programs\AOSLOBerkeleyNewCamera';
 [filename, pathname] = uigetfile(start_path);
 eval(['load ',pathname,filename])
 vformat=size(VideoToSave); vformat=vformat(2);
