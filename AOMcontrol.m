@@ -215,14 +215,15 @@ set(handles.alignh_slider,'SliderStep', [(1/64),(10/64)]);
 set(handles.alignv_slider,'SliderStep', [(1/32),(10/32)]);
 StimParams.wavfileplay = 0;
 [StimParams.wavfile, Fs] = audioread('breep.wav');
-button = questdlg('Are you running on AOSLO?','Select Application mode','Yes', 'No','Yes');
-if button(1) == 'Y'
-    SYSPARAMS.realsystem = 1; 
+if (System.Diagnostics.Process.GetProcessesByName('ICANDI-60').Length || System.Diagnostics.Process.GetProcessesByName('ICANDI').Length)
+    SYSPARAMS.realsystem = 1;   
+    SYSPARAMS.HFPSmode = 0;      
     VideoParams.vidrecord = 1;
+    if (System.Diagnostics.Process.GetProcessesByName('ICANDI-60').Length)
+        SYSPARAMS.HFPSmode = 1;
+    end        
 end
 if SYSPARAMS.realsystem == 1 
-    h = msgbox('Make sure you have FPGA application running before initiating this mode', 'Warning', 'warn');
-    uiwait(h);
     SYSPARAMS.netcommobj = netcomm('REQUEST', '127.0.0.1', 1300, 'timeout', 5000);
     aligncommand = ['UpdateTCA#' num2str(round(StimParams.aomTCA(1, 1))) '#' num2str(round(StimParams.aomTCA(1, 2))) '#' num2str(round(StimParams.aomTCA(2, 1))) '#' num2str(round(StimParams.aomTCA(2, 2))) '#' num2str(round(StimParams.aomTCA(3, 1))) '#' num2str(round(StimParams.aomTCA(3, 2))) '#'];   %#ok<NASGU>
     netcomm('write',SYSPARAMS.netcommobj,int8(aligncommand));
@@ -2283,12 +2284,20 @@ if SYSPARAMS.realsystem == 1
             %set gain to zero
             commandstring = ['Gain#0#']; %gain=0
             netcomm('write',SYSPARAMS.netcommobj,int8(commandstring));
-            %set flash frequency to 30Hz
-            commandstring = ['Flash#30#0#'];
-            netcomm('write',SYSPARAMS.netcommobj,int8(commandstring));
-            pause(0.2);
             %set stimulus to center of image
-            commandstring = ['LocUpdateAbs#256#256#'];
+            if SYSPARAMS.HFPSmode
+                %set flash frequency to 60Hz
+                commandstring = ['Flash#60#0#'];
+                netcomm('write',SYSPARAMS.netcommobj,int8(commandstring));
+                pause(0.2);
+                commandstring = ['LocUpdateAbs#256#128#'];
+            else
+                %set flash frequency to 30Hz
+                commandstring = ['Flash#30#0#'];
+                netcomm('write',SYSPARAMS.netcommobj,int8(commandstring));
+                pause(0.2);
+                commandstring = ['LocUpdateAbs#256#256#'];
+            end
             netcomm('write',SYSPARAMS.netcommobj,int8(commandstring));
             pause(0.2);
             %load tca bitmaps
